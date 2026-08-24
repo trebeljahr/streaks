@@ -1,0 +1,53 @@
+{
+  "version": 3,
+  "cliVersion": "0.2.18",
+  "scaffoldedAt": "2026-08-24T07:54:52.064Z",
+  "name": "streaks",
+  "description": "A streak like habit tracker",
+  "domain": "streaks.trebeljahr.com",
+  "features": [
+    "websocket",
+    "s3",
+    "analytics",
+    "desktop",
+    "mobile"
+  ],
+  "mlServices": [],
+  "s3Provider": "r2",
+  "deployTarget": "existing",
+  "deploymentMode": "coolify",
+  "surfaces": "fullstack",
+  "publicService": "client",
+  "ports": {
+    "server": 5276,
+    "client": 6999,
+    "nativeHmr": 7834
+  },
+  "localDev": {
+    "slug": "streaks",
+    "domain": "local.trebeljahr.com"
+  },
+  "email": {
+    "transactional": "listmonk-ses",
+    "mailingList": "none"
+  },
+  "ses": {
+    "identity": "mail.streaks.trebeljahr.com",
+    "mailFromDomain": "bounce.mail.streaks.trebeljahr.com",
+    "mailFromLabel": "bounce",
+    "mailFromBehaviorOnMxFailure": "UseDefaultValue",
+    "mailFromManagedDnsRecords": [
+      {
+        "type": "MX",
+        "name": "bounce.mail.streaks.trebeljahr.com",
+        "value": "feedback-smtp.eu-west-1.amazonses.com",
+        "priority": 10
+      },
+      {
+        "type": "TXT",
+        "name": "bounce.mail.streaks.trebeljahr.com",
+        "value": "v=spf1 include:amazonses.com ~all"
+      }
+    ]
+  }
+}

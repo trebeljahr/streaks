@@ -1,0 +1,74 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.next/
+.turbo/
+
+# Electron compiled output (source is electron/*.ts; compiled JS is generated)
+electron/main.js
+electron/preload.js
+electron/*.js.map
+
+# Electron-builder release artifacts
+release/
+
+# Generated desktop icons (source of truth is build/icon.png)
+build/icon.icns
+build/icon.ico
+build/icons/
+
+# Tauri build output (source is src-tauri/; target/ and gen/ are generated)
+src-tauri/target/
+src-tauri/gen/
+# macOS-style global gitignores often contain `Icon?`, which also matches
+# the src-tauri/icons/ directory — re-include the Tauri icon set explicitly.
+!src-tauri/icons/
+
+# Capacitor-generated native projects (created by `cap add ios|android`)
+# Comment these out if you want to commit the native Xcode / Gradle projects.
+ios/
+android/
+
+# Next.js static export output (produced by build:mobile / build:desktop)
+packages/client/out/
+
+# Environment (committed: .env.example, .env.development, AND
+#              .env.production — because production values are
+#              encrypted via dotenvx, not plaintext).
+#
+# .env.keys must NEVER be committed — it contains the private keys
+# that decrypt the encrypted values in .env.production.
+.env
+.env.local
+.env.keys
+.env.*.local
+
+# IDE
+.vscode/
+!.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+test-results/
+playwright-report/
+coverage/
+
+# Docker
+.docker-data/
+
+# TypeScript
+*.tsbuildinfo
+
+# Docusaurus
+docs-site/.docusaurus/
+docs-site/build/
+
+# Misc
+*.log
+npm-debug.log*

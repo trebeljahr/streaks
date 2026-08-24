@@ -1,0 +1,11 @@
+packages:
+  - "packages/*"
+  - "docs-site"
+allowBuilds:
+  '@sentry/cli': true
+  core-js: true
+  core-js-pure: true
+  electron-winstaller: true
+  esbuild: true
+  sharp: true
+  unrs-resolver: true

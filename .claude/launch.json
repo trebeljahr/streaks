@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "client",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@starter/client", "run", "dev"],
+      "port": 3100,
+      "autoPort": true
+    },
+    {
+      "name": "docs",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "docs-site", "run", "start", "--", "--port", "4100"],
+      "port": 4100,
+      "autoPort": true
+    },
+    {
+      "name": "server",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@starter/server", "run", "dev"],
+      "port": 5100,
+      "autoPort": true
+    }
+  ]
+}

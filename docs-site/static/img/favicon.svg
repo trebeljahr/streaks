@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Node Realtime Starter">
+  <rect width="512" height="512" rx="112" fill="#08111f" />
+  <path d="M144 164h224v184H144z" fill="#0f766e" />
+  <path d="M176 196h160v120H176z" fill="#ecfeff" />
+  <path d="M204 236h108M204 276h70" stroke="#08111f" stroke-width="22" stroke-linecap="round" />
+  <circle cx="144" cy="164" r="44" fill="#22d3ee" />
+  <circle cx="368" cy="348" r="44" fill="#a78bfa" />
+  <path d="M144 164h224M144 164v184M368 348V164M144 348h224" stroke="#f8fafc" stroke-width="18" stroke-linecap="round" opacity=".72" />
+</svg>

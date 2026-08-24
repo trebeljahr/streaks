@@ -1,0 +1,35 @@
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  seaweedfs:
+    image: chrislusf/seaweedfs:latest
+    ports:
+      - "9000:8333"
+    environment:
+      # Omitting AWS creds keeps SeaweedFS in development allow-all mode.
+      # The app still sends its local dev credentials from .env.development.
+      S3_BUCKET: streaks-dev
+    volumes:
+      - seaweedfs-data:/data
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
+  seaweedfs-data:

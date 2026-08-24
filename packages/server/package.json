@@ -1,0 +1,47 @@
+{
+  "name": "@starter/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./trpc": {
+      "types": "./src/trpc/router.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "test": "node --import tsx --test src/tests/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1048.0",
+    "@aws-sdk/s3-request-presigner": "^3.1048.0",
+    "@sentry/node": "^10.53.1",
+    "@starter/shared": "workspace:*",
+    "@trpc/server": "^11.17.0",
+    "@dotenvx/dotenvx": "^1.66.0",
+    "better-auth": "^1.6.11",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.10.1",
+    "mongoose": "^9.6.2",
+    "morgan": "^1.10.1",
+    "stripe": "^22.1.1",
+    "ws": "^8.20.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/express-serve-static-core": "^5.1.1",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^25.8.0",
+    "@types/qs": "^6.15.0",
+    "@types/ws": "^8.5.13",
+    "tsx": "^4.22.0",
+    "typescript": "^6.0.3"
+  }
+}

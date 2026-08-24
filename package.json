@@ -1,0 +1,114 @@
+{
+  "name": "streaks",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.1.2",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:fixed": "node scripts/dev.mjs --fixed",
+    "dev:docs": "node scripts/dev.mjs --docs",
+    "dev:docs:fixed": "node scripts/dev.mjs --fixed --docs",
+    "build": "pnpm --filter @starter/shared run build && pnpm --filter @starter/server run build && pnpm --filter @starter/client run build",
+    "build:server": "pnpm --filter @starter/shared run build && pnpm --filter @starter/server run build",
+    "build:client": "pnpm --filter @starter/shared run build && pnpm --filter @starter/client run build",
+    "test": "pnpm run test:unit && pnpm run test:client && pnpm run test:e2e",
+    "test:unit": "pnpm --filter @starter/server run test",
+    "test:client": "pnpm --filter @starter/client run test",
+    "test:e2e": "npx playwright test",
+    "dev:infra": "docker-compose -f docker-compose.dev.yml up -d",
+    "dev:infra:stop": "docker-compose -f docker-compose.dev.yml down",
+    "dev:infra:reset": "docker-compose -f docker-compose.dev.yml down -v",
+    "seed:assets": "hatchkit assets seed",
+    "assets:push": "hatchkit assets push",
+    "assets:pull": "hatchkit assets pull",
+    "typecheck": "pnpm --filter @starter/shared run build && pnpm -r --filter '!@starter/shared' run typecheck && pnpm typecheck:electron",
+    "typecheck:electron": "tsc -p electron --noEmit",
+    "dev:desktop": "concurrently -k -n next,electron -c blue,magenta \"PORT=7834 pnpm --filter @starter/client dev\" \"wait-on http://localhost:7834 && pnpm electron:compile && ELECTRON_DEV_URL=http://localhost:7834 electron electron/main.js\"",
+    "build:desktop": "pnpm build:client && pnpm electron:compile",
+    "electron:compile": "tsc -p electron",
+    "electron:build": "pnpm build:desktop && electron-builder",
+    "electron:preview": "pnpm build:desktop && electron-builder --dir",
+    "icons:desktop": "node scripts/icons-desktop.mjs",
+    "itch:push:mac": "butler push release/*-mac.zip $ITCH_USER/$ITCH_GAME:mac",
+    "itch:push:win": "butler push release/*-win.exe $ITCH_USER/$ITCH_GAME:win",
+    "itch:push:linux": "butler push release/*.AppImage $ITCH_USER/$ITCH_GAME:linux",
+    "dev:android": "bash scripts/android-dev.sh",
+    "dev:ios": "bash scripts/ios-dev.sh",
+    "build:mobile": "pnpm build:client && cap sync",
+    "cap:add:ios": "pnpm build:client && cap add ios",
+    "cap:add:android": "pnpm build:client && cap add android",
+    "cap:sync": "cap sync",
+    "cap:run:ios": "cap run ios",
+    "cap:run:android": "cap run android",
+    "build:ios:release": "pnpm build:mobile && cap open ios",
+    "build:android:release": "pnpm build:mobile && cd android && ./gradlew bundleRelease",
+    "build:android:apk": "pnpm build:mobile && cd android && ./gradlew assembleRelease",
+    "mobile:assets": "capacitor-assets generate --iconBackgroundColor '#ffffff'",
+    "newsletter:test-tx": "tsx scripts/newsletter-test-tx.ts",
+    "newsletter:welcome": "tsx scripts/newsletter-welcome.ts",
+    "newsletter:verify": "tsx scripts/newsletter-verify.ts"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.3.4",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.8.0",
+    "concurrently": "^9.2.1",
+    "electron": "^42.1.0",
+    "electron-builder": "^26.8.1",
+    "icon-gen": "^5.0.0",
+    "mongodb": "^7.2.0",
+    "tsx": "^4.22.0",
+    "typescript": "^6.0.3",
+    "wait-on": "^9.0.10"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/core": "^8.3.4",
+    "@capacitor/ios": "^8.3.4",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/screen-orientation": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2"
+  },
+  "build": {
+    "appId": "com.example.streaks",
+    "productName": "streaks",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "packages/client/out/**/*",
+      "electron/main.js",
+      "electron/preload.js",
+      "electron/package.json"
+    ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "build/icon.icns",
+      "category": "public.app-category.utilities"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "build/icon.png",
+      "category": "Utility"
+    }
+  },
+  "description": "A streak like habit tracker"
+}

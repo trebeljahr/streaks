@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"></head>
+  <body style="font-family:Georgia,serif;line-height:1.6;color:#1a1a1a;max-width:620px;margin:0 auto;padding:32px 24px;">
+    <p style="margin:0 0 8px 0;font-size:12px;color:#777;text-transform:uppercase;letter-spacing:0.06em;">{{issueNumber}} · {{issueDate}}</p>
+    <h1 style="font-size:26px;margin:0 0 24px 0;font-weight:600;font-family:system-ui,sans-serif;">{{siteName}}</h1>
+
+    <p style="margin:0 0 16px 0;">Hello — this is the sample digest hatchkit ships with the starter. Edit
+    <code style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:90%;background:#f4f4f4;padding:1px 4px;border-radius:3px;">starter/emails/digest-sample.html</code>
+    to set your own layout, then run <code>pnpm newsletter:draft starter/emails/digest-sample.html --subject "Issue 1"</code>
+    to stage it in Listmonk's admin UI.</p>
+
+    <h2 style="font-size:18px;margin:32px 0 8px 0;font-weight:600;font-family:system-ui,sans-serif;">This week's reading</h2>
+    <p style="margin:0 0 16px 0;">Three short notes on the work, links, and one thing that surprised me.</p>
+
+    <h3 style="font-size:15px;margin:24px 0 8px 0;font-weight:600;font-family:system-ui,sans-serif;">1. The thing</h3>
+    <p style="margin:0 0 16px 0;">Body text goes here. Replace with whatever you want to send subscribers.</p>
+
+    <h3 style="font-size:15px;margin:24px 0 8px 0;font-weight:600;font-family:system-ui,sans-serif;">2. The other thing</h3>
+    <p style="margin:0 0 16px 0;">Same — every <code>&lt;p&gt;</code> in this file is editable. Inline styles only (no
+    external CSS — most mail clients strip <code>&lt;link&gt;</code> tags).</p>
+
+    <h3 style="font-size:15px;margin:24px 0 8px 0;font-weight:600;font-family:system-ui,sans-serif;">3. One more</h3>
+    <p style="margin:0 0 16px 0;">If you want a header image or call-to-action button, paste the HTML directly.</p>
+
+    <hr style="border:0;border-top:1px solid #e5e5e5;margin:40px 0 24px 0;">
+    <p style="margin:0 0 8px 0;font-size:13px;color:#555;">Thanks for reading — reply to this email if anything sparks.</p>
+    <p style="margin:0;font-size:12px;color:#777;">
+      Don't want these any more? <a href="{{ UnsubscribeURL }}" style="color:#777;">Unsubscribe</a>.
+    </p>
+  </body>
+</html>

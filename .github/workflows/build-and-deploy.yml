@@ -1,0 +1,170 @@
+name: build-and-deploy
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: main-deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm run test:unit
+      - run: pnpm run test:client
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [verify]
+    services:
+      mongo-e2e:
+        image: mongo:7
+        ports:
+          - 27018:27017
+      redis-e2e:
+        image: redis:7-alpine
+        ports:
+          - 6380:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+
+      - name: Start MinIO
+        run: |
+          docker run -d --name e2e-minio -p 9002:9000 \
+            -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
+            --tmpfs /data minio/minio:latest server /data
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:9002/minio/health/live && break
+            sleep 1
+          done
+          docker run --rm --network host \
+            --entrypoint sh minio/mc:latest -c \
+            "mc alias set local http://127.0.0.1:9002 minioadmin minioadmin && \
+             mc mb --ignore-existing local/starter-e2e && \
+             mc anonymous set download local/starter-e2e"
+
+      - run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npx playwright test
+        env:
+          CI: "true"
+          MONGODB_URI: mongodb://127.0.0.1:27018/starter-e2e
+          REDIS_URL: redis://127.0.0.1:6380
+          BETTER_AUTH_SECRET: e2e-test-secret
+          BETTER_AUTH_URL: http://127.0.0.1:5006
+          FRONTEND_URL: http://127.0.0.1:3001
+          S3_ENDPOINT: http://127.0.0.1:9002
+          S3_FORCE_PATH_STYLE: "true"
+          S3_BUCKET_NAME: starter-e2e
+          S3_PUBLIC_URL: http://127.0.0.1:9002/starter-e2e
+          AWS_ACCESS_KEY_ID: minioadmin
+          AWS_SECRET_ACCESS_KEY: minioadmin
+          AWS_REGION: us-east-1
+
+  build-server:
+    runs-on: ubuntu-latest
+    needs: [verify, e2e]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: packages/server/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}-server:main
+            ghcr.io/${{ github.repository }}-server:${{ github.sha }}
+
+  build-client:
+    runs-on: ubuntu-latest
+    needs: [verify, e2e]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: packages/client/Dockerfile
+          push: true
+          # NEXT_PUBLIC_* are inlined into the browser bundle at image
+          # BUILD time — setting them as runtime env on the deployed
+          # container does nothing. The URL values below are written by
+          # hatchkit at scaffold time (and kept in sync by
+          # `hatchkit regen-infra` / `hatchkit rename-domain`). The
+          # analytics values are optional GitHub Actions repo VARIABLES
+          # (not secrets): gh variable set NEXT_PUBLIC_OPENPANEL_CLIENT_ID ...
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://streaks.trebeljahr.com
+            NEXT_PUBLIC_WS_URL=wss://streaks.trebeljahr.com
+            NEXT_PUBLIC_OPENPANEL_CLIENT_ID=${{ vars.NEXT_PUBLIC_OPENPANEL_CLIENT_ID }}
+            NEXT_PUBLIC_PLAUSIBLE_DOMAIN=${{ vars.NEXT_PUBLIC_PLAUSIBLE_DOMAIN }}
+            NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL=${{ vars.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL }}
+            NEXT_PUBLIC_SENTRY_DSN=${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
+          tags: |
+            ghcr.io/${{ github.repository }}-client:main
+            ghcr.io/${{ github.repository }}-client:${{ github.sha }}
+
+  # Single deploy job — Hatchkit registers ONE Coolify app per project
+  # (a single dockercompose pulling both ghcr.io/<owner>/<repo>-server
+  # and -client images), so there is exactly ONE deploy trigger to fire
+  # once both image builds succeed. Earlier revisions of this workflow
+  # had per-build deploy steps reading per-surface secret names
+  # (COOLIFY_SERVER_RESOURCE_UUID, COOLIFY_CLIENT_RESOURCE_UUID) that
+  # Hatchkit never sets — both steps silently no-opped and Coolify
+  # never got told to redeploy. The secret names below match what
+  # `hatchkit adopt` and `setCoolifyDeploySecrets` push.
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build-server, build-client]
+    steps:
+      - name: Deploy via Coolify API
+        env:
+          COOLIFY_BASE_URL: ${{ secrets.COOLIFY_BASE_URL }}
+          COOLIFY_RESOURCE_UUID: ${{ secrets.COOLIFY_RESOURCE_UUID }}
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+        if: env.COOLIFY_BASE_URL != '' && env.COOLIFY_RESOURCE_UUID != ''
+        run: |
+          curl -fsSL -X POST \
+            "$COOLIFY_BASE_URL/api/v1/deploy?uuid=$COOLIFY_RESOURCE_UUID&force=true" \
+            -H "Authorization: Bearer $COOLIFY_API_TOKEN"
+
+      - name: Deploy via webhook (fallback)
+        env:
+          COOLIFY_BASE_URL: ${{ secrets.COOLIFY_BASE_URL }}
+          COOLIFY_WEBHOOK_URL: ${{ secrets.COOLIFY_WEBHOOK_URL }}
+        if: env.COOLIFY_BASE_URL == '' && env.COOLIFY_WEBHOOK_URL != ''
+        run: curl -fsSL "$COOLIFY_WEBHOOK_URL"

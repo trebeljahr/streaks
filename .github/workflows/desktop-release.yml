@@ -1,0 +1,94 @@
+name: Desktop Release
+
+# Triggered by pushing a tag like v0.1.0 or manual dispatch.
+# Each platform job builds an Electron app and uploads it to itch.io
+# via butler. Set ITCH_API_KEY / ITCH_USER / ITCH_GAME as repo secrets.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: mac
+            artifact-glob: "release/*.zip"
+            butler-channel: mac
+          - os: windows-latest
+            target: win
+            artifact-glob: "release/*.exe"
+            butler-channel: win
+          - os: ubuntu-latest
+            target: linux
+            artifact-glob: "release/*.AppImage"
+            butler-channel: linux
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build client static export
+        run: pnpm build:client
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+
+      - name: Compile Electron
+        run: pnpm electron:compile
+
+      - name: Package (electron-builder)
+        run: pnpm exec electron-builder --${{ matrix.target }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.target }}
+          path: ${{ matrix.artifact-glob }}
+
+      - name: Install butler (itch.io)
+        if: env.ITCH_API_KEY != ''
+        shell: bash
+        env:
+          ITCH_API_KEY: ${{ secrets.ITCH_API_KEY }}
+        run: |
+          case "${{ matrix.os }}" in
+            macos-latest)  URL=https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive/default ;;
+            ubuntu-latest) URL=https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default ;;
+            windows-latest) URL=https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default ;;
+          esac
+          curl -L -o butler.zip "$URL"
+          unzip butler.zip -d butler-bin
+          echo "$PWD/butler-bin" >> "$GITHUB_PATH"
+
+      - name: Push to itch.io
+        if: env.ITCH_API_KEY != ''
+        shell: bash
+        env:
+          BUTLER_API_KEY: ${{ secrets.ITCH_API_KEY }}
+          ITCH_USER: ${{ secrets.ITCH_USER }}
+          ITCH_GAME: ${{ secrets.ITCH_GAME }}
+          ITCH_API_KEY: ${{ secrets.ITCH_API_KEY }}
+        run: |
+          ARTIFACT=$(ls ${{ matrix.artifact-glob }} | head -n1)
+          butler push "$ARTIFACT" "$ITCH_USER/$ITCH_GAME:${{ matrix.butler-channel }}" \
+            --userversion "${GITHUB_REF_NAME#v}"

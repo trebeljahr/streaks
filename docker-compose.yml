@@ -1,0 +1,69 @@
+# Production Docker Compose — deploy as a Coolify Service Stack.
+# Coolify auto-detects ${VAR_NAME} syntax and creates UI fields for each.
+# Do NOT expose ports here — Coolify's Traefik handles external routing.
+
+services:
+  server:
+    image: ${SERVER_IMAGE:-ghcr.io/trebeljahr/streaks-server:main}
+    environment:
+      PORT: "5276"
+      MONGODB_URI: mongodb://mongo:27017/${DB_NAME:-app}
+      REDIS_URL: redis://redis:6379
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      LISTMONK_URL: ${LISTMONK_URL:-}
+      LISTMONK_API_USER: ${LISTMONK_API_USER:-}
+      LISTMONK_API_TOKEN: ${LISTMONK_API_TOKEN:-}
+      LISTMONK_FROM_EMAIL: ${LISTMONK_FROM_EMAIL:-}
+      LISTMONK_FROM: ${LISTMONK_FROM:-}
+      LISTMONK_LIVE_LIST_ID: ${LISTMONK_LIVE_LIST_ID:-}
+      LISTMONK_TEST_LIST_ID: ${LISTMONK_TEST_LIST_ID:-}
+      LISTMONK_TX_TEMPLATE_ID: ${LISTMONK_TX_TEMPLATE_ID:-}
+      LISTMONK_CAMPAIGN_TEMPLATE_ID: ${LISTMONK_CAMPAIGN_TEMPLATE_ID:-}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-assets}
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-false}
+      AWS_REGION: ${AWS_REGION:-eu-central-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    depends_on:
+      - mongo
+      - redis
+    restart: unless-stopped
+
+  client:
+    image: ${CLIENT_IMAGE:-ghcr.io/trebeljahr/streaks-client:main}
+    environment:
+      # Pin client port — Coolify's app-level PORT (set for the server)
+      # would otherwise bleed into every service.
+      PORT: "6999"
+      # Deliberately NO NEXT_PUBLIC_* here: Next.js inlines those into
+      # the browser bundle when the image is BUILT, so runtime env on
+      # this prebuilt container cannot affect them. They are passed as
+      # Docker build args in .github/workflows/build-and-deploy.yml.
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  mongo-data:

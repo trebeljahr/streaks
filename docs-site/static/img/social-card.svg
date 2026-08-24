@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Node Realtime Starter Docs">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111f" />
+      <stop offset=".56" stop-color="#0f766e" />
+      <stop offset="1" stop-color="#7c3aed" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <circle cx="1060" cy="120" r="180" fill="#22d3ee" opacity=".18" />
+  <circle cx="104" cy="550" r="220" fill="#a78bfa" opacity=".18" />
+  <g transform="translate(76 72)">
+    <rect width="76" height="76" rx="18" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.68)" stroke-width="3" />
+    <path d="M24 30h28M24 46h18" stroke="#fff" stroke-width="8" stroke-linecap="round" />
+    <text x="100" y="50" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="700">Node Realtime Starter Docs</text>
+  </g>
+  <text x="76" y="294" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="82" font-weight="800">Build multiplayer apps</text>
+  <text x="76" y="384" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="82" font-weight="800">from a production starter.</text>
+  <text x="80" y="462" fill="rgba(255,255,255,.86)" font-family="Inter, Arial, sans-serif" font-size="32">Express, Next.js, WebSockets, auth, payments,</text>
+  <text x="80" y="506" fill="rgba(255,255,255,.86)" font-family="Inter, Arial, sans-serif" font-size="32">and deployment workflows.</text>
+  <text x="80" y="560" fill="rgba(255,255,255,.74)" font-family="Inter, Arial, sans-serif" font-size="26">Docs / Architecture / Getting started</text>
+</svg>
