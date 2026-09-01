@@ -41,11 +41,15 @@ export default defineConfig({
       },
     },
     {
-      command: `pnpm --filter @starter/client run dev`,
+      command: `pnpm --filter @starter/client exec next dev -p ${E2E_CLIENT_PORT}`,
       url: `http://127.0.0.1:${E2E_CLIENT_PORT}`,
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
       env: {
+        // Playwright runs with NODE_ENV=test and webServer inherits it.
+        // `next dev` under a non-development NODE_ENV serves markup that
+        // never hydrates, so forms fall back to a native GET submit.
+        NODE_ENV: "development",
         PORT: E2E_CLIENT_PORT,
         NEXT_PUBLIC_API_URL: `http://127.0.0.1:${E2E_SERVER_PORT}`,
         NEXT_PUBLIC_WS_URL: `ws://127.0.0.1:${E2E_SERVER_PORT}`,

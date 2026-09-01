@@ -2,25 +2,22 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "client",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@starter/client", "run", "dev"],
-      "port": 3100,
-      "autoPort": true
+      "name": "streaks-api",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "PORT=51763 FRONTEND_URL=http://localhost:57421 BETTER_AUTH_URL=http://localhost:51763 pnpm --filter @starter/server run dev"
+      ],
+      "port": 51763
     },
     {
-      "name": "docs",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "docs-site", "run", "start", "--", "--port", "4100"],
-      "port": 4100,
-      "autoPort": true
-    },
-    {
-      "name": "server",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@starter/server", "run", "dev"],
-      "port": 5100,
-      "autoPort": true
+      "name": "streaks-web",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "NEXT_PUBLIC_API_URL=http://localhost:51763 pnpm --filter @starter/client exec next dev -p 57421"
+      ],
+      "port": 57421
     }
   ]
 }

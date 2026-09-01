@@ -75,3 +75,6 @@ npm-debug.log*
 
 # Commit encrypted configuration; private .env.keys stays ignored.
 !/packages/server/.env.production
+# Seeded design-canvas payload — a ~2 MB build output of the .dc.html
+# artboards beside it, republished rather than reviewed as source.
+design/streaks-practice-tracker.html

@@ -7,32 +7,42 @@ set -euo pipefail
 if [ -z "${CI:-}" ]; then
   echo "[e2e] Starting local test infrastructure..."
 
+  # `docker ps` lists only RUNNING containers, so a container that exists but
+  # is stopped (an interrupted run, a machine reboot) makes `docker run --name`
+  # fail with a name conflict. Start what is already there, create what is not.
+  ensure_container() {
+    local name="$1"
+    shift
+    if docker ps --format '{{.Names}}' | grep -qx "$name"; then
+      return 0
+    fi
+    if docker ps -a --format '{{.Names}}' | grep -qx "$name"; then
+      docker start "$name" >/dev/null
+      echo "[e2e] Restarted $name"
+      return 0
+    fi
+    "$@"
+  }
+
   # MongoDB on port 27018
-  if ! docker ps --format '{{.Names}}' | grep -q starter-e2e-mongo; then
+  ensure_container starter-e2e-mongo \
     docker run -d --name starter-e2e-mongo -p 27018:27017 --tmpfs /data/db mongo:7
-    echo "[e2e] Started MongoDB on port 27018"
-  fi
 
   # Redis on port 6380
-  if ! docker ps --format '{{.Names}}' | grep -q starter-e2e-redis; then
+  ensure_container starter-e2e-redis \
     docker run -d --name starter-e2e-redis -p 6380:6379 --tmpfs /data redis:7-alpine
-    echo "[e2e] Started Redis on port 6380"
-  fi
 
-  # SeaweedFS S3 on port 9002
-  if ! docker ps --format '{{.Names}}' | grep -q starter-e2e-seaweedfs; then
+  # SeaweedFS S3 on port 9002. The image creates S3_BUCKET on startup.
+  ensure_container starter-e2e-seaweedfs \
     docker run -d --name starter-e2e-seaweedfs -p 9002:8333 \
       -e S3_BUCKET=streaks-e2e \
       --tmpfs /data chrislusf/seaweedfs:4.47
     echo "[e2e] Started SeaweedFS S3 on port 9002"
 
-    # Wait for SeaweedFS. The image creates S3_BUCKET on startup.
-    for i in $(seq 1 30); do
-      curl -s http://127.0.0.1:9002/ >/dev/null && break
-      sleep 1
-    done
-    echo "[e2e] SeaweedFS bucket ready"
-  fi
+  for i in $(seq 1 30); do
+    curl -s http://127.0.0.1:9002/ >/dev/null && break
+    sleep 1
+  done
 
   # Wait for MongoDB
   for i in $(seq 1 30); do

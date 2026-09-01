@@ -8,6 +8,8 @@ export interface IProfile extends Document {
   preferences: {
     theme: ThemePreference;
     notifications: boolean;
+    timezone: string;
+    dayStartHour: number;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -25,6 +27,12 @@ const profileSchema = new Schema<IProfile>(
         default: "system",
       },
       notifications: { type: Boolean, default: true },
+      // Streak days are resolved in this zone, so travel doesn't break a
+      // streak and DST doesn't shift one.
+      timezone: { type: String, default: "UTC" },
+      // A session at 1am belongs to the previous day. Night owls are the
+      // norm here, not the exception.
+      dayStartHour: { type: Number, min: 0, max: 23, default: 4 },
     },
   },
   { timestamps: true },

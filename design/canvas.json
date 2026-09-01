@@ -1,0 +1,35 @@
+{
+  "artboards": [
+    { "file": "Onboarding.dc.html",     "x": 0,    "y": 0,    "w": 390, "h": 844, "title": "Onboarding" },
+    { "file": "Main.dc.html",           "x": 470,  "y": 0,    "w": 390, "h": 844, "title": "Today" },
+    { "file": "SessionLive.dc.html",    "x": 940,  "y": 0,    "w": 390, "h": 844, "title": "Session Live" },
+    { "file": "SessionComplete.dc.html","x": 1410, "y": 0,    "w": 390, "h": 844, "title": "Session Complete" },
+    { "file": "PracticeDetail.dc.html", "x": 0,    "y": 1074, "w": 390, "h": 844, "title": "Practice Detail" },
+    { "file": "RepairModal.dc.html",    "x": 470,  "y": 1074, "w": 390, "h": 844, "title": "Repair Token" },
+    { "file": "Rooms.dc.html",          "x": 940,  "y": 1074, "w": 390, "h": 844, "title": "Rooms" },
+    { "file": "Tokens.dc.html",         "x": 0,    "y": 2148, "w": 940, "h": 820, "title": "Design Tokens" }
+  ],
+  "annotations": [
+    {
+      "id": "loop",
+      "x": 0, "y": -168, "w": 860,
+      "text": "THE CORE LOOP — left to right.\nOnboarding is under 60 seconds and needs no keyboard. Today opens on a big Start, never on an inventory of failure. The minimum (2 min) is what credits the day; the target is aspirational only."
+    },
+    {
+      "id": "timer-law",
+      "x": 940, "y": -168, "w": 860,
+      "text": "THE TIMER COUNTS UP — there is no countdown and no overrun, so the screen has no failure state. The teal dot on the ring marks where the minimum was crossed: the day was already secured at 2:00, everything after is bonus. Elapsed derives from wall clock, never accumulated ticks, so iOS backgrounding cannot corrupt it."
+    },
+    {
+      "id": "no-shame",
+      "x": 0, "y": 884, "w": 860,
+      "text": "NO SHAME SURFACES — blank days are neutral gray, never red, never an X. The momentum curve on Practice Detail dips to 23 and climbs back: recency weighting (10-day half-life) is what makes coming back visibly pay. Repair tokens are always an explicit choice, and declining one is written as a fine outcome."
+    },
+    {
+      "id": "tokens-note",
+      "x": 1040, "y": 2148, "w": 400,
+      "text": "The token sheet is the spec for globals.css.\n\nThree fonts: Sora for display, Outfit for UI, DM Mono for timers and numerals — mono so digits don't jitter as the clock runs.\n\nAmber appears only for repair. It is the warmest colour in the system and it never means 'wrong'."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

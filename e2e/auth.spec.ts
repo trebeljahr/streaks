@@ -19,7 +19,7 @@ test.afterAll(async () => {
 test.describe("Authentication", () => {
   test("can sign up a new account", async ({ page }) => {
     await signUpViaUI(page, TEST_USER);
-    await expect(page).toHaveURL(/\/dashboard\/?$/);
+    await expect(page).toHaveURL(/\/(dashboard|today)\/?$/);
   });
 
   test("can sign out", async ({ page }) => {
@@ -30,7 +30,7 @@ test.describe("Authentication", () => {
 
   test("can sign in with existing account", async ({ page }) => {
     await signInViaUI(page, TEST_USER);
-    await expect(page).toHaveURL(/\/dashboard\/?$/);
+    await expect(page).toHaveURL(/\/(dashboard|today)\/?$/);
   });
 
   test("shows error for invalid credentials", async ({ page }) => {

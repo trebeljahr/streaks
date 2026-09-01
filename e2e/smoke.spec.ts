@@ -17,7 +17,8 @@ test.describe("Smoke tests", () => {
   });
 
   test("health endpoint returns ok", async ({ request }) => {
-    const serverUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:5006";
+    const serverUrl = process.env.NEXT_PUBLIC_API_URL ??
+      `http://127.0.0.1:${process.env.E2E_SERVER_PORT ?? "5006"}`;
     const response = await request.get(`${serverUrl}/api/health`);
     expect(response.ok()).toBe(true);
     const body = await response.json();

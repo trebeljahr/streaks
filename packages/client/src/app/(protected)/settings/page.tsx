@@ -1,8 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc";
+import { signOut } from "@/lib/auth-client";
 
 export default function SettingsPage() {
+  const router = useRouter();
   const profileQuery = trpc.profile.get.useQuery();
   const billingStatus = trpc.billing.status.useQuery();
   const updateMutation = trpc.profile.update.useMutation({
@@ -13,6 +16,11 @@ export default function SettingsPage() {
 
   function handleThemeChange(theme: "light" | "dark" | "system") {
     updateMutation.mutate({ preferences: { theme } });
+  }
+
+  async function handleSignOut() {
+    await signOut();
+    router.push("/login");
   }
 
   function handleNotificationToggle() {
@@ -176,6 +184,18 @@ export default function SettingsPage() {
             )}
           </div>
         ) : null}
+
+        {/* Account */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Account</h2>
+          <button
+            onClick={handleSignOut}
+            className="inline-flex h-11 items-center justify-center rounded-md border border-line-strong px-4 text-sm font-medium text-ink-button"
+            data-testid="sign-out"
+          >
+            Sign out
+          </button>
+        </div>
 
         {/* Danger zone */}
         <div className="space-y-4 rounded-md border border-destructive/30 p-4">

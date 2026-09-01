@@ -8,7 +8,12 @@ export const profileRouter = router({
     if (!profile) {
       profile = await Profile.create({
         userId: ctx.user.id,
-        preferences: { theme: "system", notifications: true },
+        preferences: {
+          theme: "system",
+          notifications: true,
+          timezone: "UTC",
+          dayStartHour: 4,
+        },
       });
     }
     return {
@@ -31,6 +36,12 @@ export const profileRouter = router({
         }
         if (input.preferences.notifications !== undefined) {
           update["preferences.notifications"] = input.preferences.notifications;
+        }
+        if (input.preferences.timezone !== undefined) {
+          update["preferences.timezone"] = input.preferences.timezone;
+        }
+        if (input.preferences.dayStartHour !== undefined) {
+          update["preferences.dayStartHour"] = input.preferences.dayStartHour;
         }
       }
 

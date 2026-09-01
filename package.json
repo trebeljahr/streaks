@@ -15,7 +15,7 @@
     "build:server": "pnpm --filter @starter/shared run build && pnpm --filter @starter/server run build",
     "build:client": "pnpm --filter @starter/shared run build && pnpm --filter @starter/client run build",
     "test": "pnpm run test:unit && pnpm run test:client && pnpm run test:e2e",
-    "test:unit": "pnpm --filter @starter/server run test",
+    "test:unit": "pnpm --filter @starter/shared run build && pnpm --filter @starter/server run test",
     "test:client": "pnpm --filter @starter/client run test",
     "test:e2e": "npx playwright test",
     "dev:infra": "docker-compose -f docker-compose.dev.yml up -d",

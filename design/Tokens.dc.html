@@ -1,0 +1,332 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&amp;family=Outfit:wght@300;400;500;600&amp;family=DM+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; font-family: 'Outfit', system-ui, sans-serif; background: #16141F; }
+    a { color: #8B7FD4; text-decoration: none; } a:hover { color: #C9A5F0; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+<div style="width: 940px; height: 820px; background: #16141F; color: #EDE9F5; display: flex; flex-direction: column; gap: 24px; padding: 32px 36px; overflow: hidden">
+
+  <div style="display: flex; align-items: flex-end; gap: 18px">
+    <div style="display: flex; flex-direction: column; gap: 5px">
+      <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: 0.12em; color: #635C7A">SOFT DUSK</div>
+      <div style="font-family: 'Sora', sans-serif; font-weight: 600; font-size: 26px; line-height: 1.15; letter-spacing: -0.02em; color: #EDE9F5">Design tokens</div>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <div style="display: flex; align-items: center; gap: 9px; border: 1px solid #3A3550; border-radius: 999px; padding: 8px 15px">
+      <div style="width: 8px; height: 8px; border-radius: 50%; background: #E0A458"></div>
+      <div style="font-size: 12.5px; font-weight: 400; color: #C4BDD8">No red. Amber means repair, never wrong.</div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px">
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: 0.12em; color: #635C7A">GROUND</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #16141F; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">ground</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#16141F</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">app background</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #1E1B29; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">surface</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#1E1B29</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">cards</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #232034; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">raised</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#232034</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">controls</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #2E2A3C; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">line</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#2E2A3C</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">borders</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: 0.12em; color: #635C7A">INK</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #EDE9F5; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">ink</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#EDE9F5</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">primary text</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #C4BDD8; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">ink-button</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#C4BDD8</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">secondary labels</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #9C95B4; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">ink-muted</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#9C95B4</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">supporting text</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #7E7796; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">ink-soft</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#7E7796</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">hints</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #635C7A; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">ink-faint</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#635C7A</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">labels, gaps</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #23202F; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">day-blank</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#23202F</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">quiet day cell</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: 0.12em; color: #635C7A">SIGNAL</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #8B7FD4; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">periwinkle</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#8B7FD4</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">primary action</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #C9A5F0; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">glow</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#C9A5F0</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">progress, reward</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #6FBFA8; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">secured</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#6FBFA8</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">day credited</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #8FD4BF; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">secured-ink</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#8FD4BF</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">text on secured</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #E0A458; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">repair</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#E0A458</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">tokens only</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #EDCFA6; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">repair-ink</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#EDCFA6</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">text on repair</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: 0.12em; color: #635C7A">PER PRACTICE</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #7FA8D4; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">writing</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#7FA8D4</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796"></div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #8B7FD4; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">finishing</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#8B7FD4</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796"></div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #6FBFA8; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">learning</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#6FBFA8</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796"></div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #C9A5F0; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">piano</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#C9A5F0</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796"></div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #E0A458; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">drawing</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#E0A458</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796"></div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <div style="height: 42px; border-radius: 10px; background: #635C7A; border: 1px solid rgba(255,255,255,0.06)"></div>
+          <div style="display: flex; flex-direction: column; gap: 1px">
+            <div style="font-size: 12px; font-weight: 500; color: #EDE9F5">quiet</div>
+            <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">#635C7A</div>
+            <div style="font-size: 10.5px; font-weight: 300; color: #7E7796">dormant</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="height: 1px; background: #24202F"></div>
+
+  <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 30px">
+
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: 0.12em; color: #635C7A">TYPE</div>
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: baseline; gap: 14px">
+          <div style="font-family: 'Sora', sans-serif; font-weight: 600; font-size: 26px; line-height: 1.15; letter-spacing: -0.02em; color: #EDE9F5">Ready when you are.</div>
+          <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">Sora 600 &middot; 26/1.15</div>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 14px">
+          <div style="font-size: 16px; font-weight: 500; color: #EDE9F5">Piano &middot; card title</div>
+          <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">Outfit 500 &middot; 16</div>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 14px">
+          <div style="font-size: 12.5px; font-weight: 300; color: #9C95B4">11 days &middot; 2 min keeps it</div>
+          <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">Outfit 300 &middot; 12.5</div>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 14px">
+          <div style="font-family: 'DM Mono', monospace; font-weight: 500; font-size: 30px; color: #EDE9F5; line-height: 1">07:42</div>
+          <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">DM Mono &middot; timers, numerals</div>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 14px">
+          <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: 0.12em; color: #635C7A">SECTION LABEL</div>
+          <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">DM Mono &middot; 10.5 &middot; 0.12em</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: 0.12em; color: #635C7A">MOMENTUM RING</div>
+      <div style="display: flex; gap: 18px">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 7px">
+          <svg width="40" height="40" viewBox="0 0 40 40" style="display: block">
+            <circle cx="20" cy="20" r="16" fill="none" stroke="#2E2A3C" stroke-width="3.5"></circle>
+            <circle cx="20" cy="20" r="16" fill="none" stroke="#C9A5F0" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="0.0 100.5" transform="rotate(-90 20 20)"></circle>
+          </svg>
+          <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #7E7796">0</div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 7px">
+          <svg width="40" height="40" viewBox="0 0 40 40" style="display: block">
+            <circle cx="20" cy="20" r="16" fill="none" stroke="#2E2A3C" stroke-width="3.5"></circle>
+            <circle cx="20" cy="20" r="16" fill="none" stroke="#C9A5F0" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="24.1 100.5" transform="rotate(-90 20 20)"></circle>
+          </svg>
+          <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #7E7796">24</div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 7px">
+          <svg width="40" height="40" viewBox="0 0 40 40" style="display: block">
+            <circle cx="20" cy="20" r="16" fill="none" stroke="#2E2A3C" stroke-width="3.5"></circle>
+            <circle cx="20" cy="20" r="16" fill="none" stroke="#C9A5F0" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="66.3 100.5" transform="rotate(-90 20 20)"></circle>
+          </svg>
+          <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #7E7796">66</div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 7px">
+          <svg width="40" height="40" viewBox="0 0 40 40" style="display: block">
+            <circle cx="20" cy="20" r="16" fill="none" stroke="#2E2A3C" stroke-width="3.5"></circle>
+            <circle cx="20" cy="20" r="16" fill="none" stroke="#C9A5F0" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="100.5 100.5" transform="rotate(-90 20 20)"></circle>
+          </svg>
+          <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #7E7796">100</div>
+        </div>
+      </div>
+      <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: 0.12em; color: #635C7A; margin-top: 4px">DAY CELLS</div>
+      <div style="display: flex; align-items: center; gap: 7px">
+        <div style="width: 20px; height: 20px; border-radius: 5px; background: #23202F"></div>
+        <div style="width: 20px; height: 20px; border-radius: 5px; background: rgba(201, 165, 240, 0.22)"></div>
+        <div style="width: 20px; height: 20px; border-radius: 5px; background: rgba(201, 165, 240, 0.52)"></div>
+        <div style="width: 20px; height: 20px; border-radius: 5px; background: #C9A5F0"></div>
+        <div style="width: 20px; height: 20px; border-radius: 5px; background: rgba(224, 164, 88, 0.18); border: 1px dashed #E0A458"></div>
+      </div>
+      <div style="font-size: 11.5px; font-weight: 300; color: #7E7796">quiet &middot; short &middot; solid &middot; long &middot; repaired</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: 0.12em; color: #635C7A">CONTROLS &middot; 44px MIN</div>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="height: 48px; border-radius: 15px; background: #8B7FD4; display: flex; align-items: center; justify-content: center">
+          <div style="font-size: 14.5px; font-weight: 600; color: #16141F">Primary</div>
+        </div>
+        <div style="height: 48px; border-radius: 15px; border: 1px solid #35304A; display: flex; align-items: center; justify-content: center">
+          <div style="font-size: 14.5px; font-weight: 500; color: #C4BDD8">Secondary</div>
+        </div>
+        <div style="height: 48px; border-radius: 15px; background: #E0A458; display: flex; align-items: center; justify-content: center">
+          <div style="font-size: 14.5px; font-weight: 600; color: #16141F">Repair</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px">
+          <div style="font-family: 'DM Mono', monospace; font-size: 10.5px; color: #635C7A">radius</div>
+          <div style="font-family: 'DM Mono', monospace; font-size: 11.5px; color: #9C95B4">10 &middot; 12 &middot; 15 &middot; 16 &middot; 18 &middot; 26</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
