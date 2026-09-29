@@ -1,6 +1,6 @@
 import { env } from "../config/env.js";
 
-interface EmailParams {
+export interface EmailParams {
   to: string;
   subject: string;
   text: string;
@@ -31,12 +31,10 @@ export async function sendEmail(params: EmailParams): Promise<void> {
     return;
   }
 
-  const body = params.html ?? `<pre>${escapeHtml(params.text)}</pre>`;
   const baseUrl = env.LISTMONK_URL.replace(/\/$/, "");
   const auth = Buffer.from(
     `${env.LISTMONK_API_USER}:${env.LISTMONK_API_TOKEN}`,
   ).toString("base64");
-  const fromEmail = env.LISTMONK_FROM || env.LISTMONK_FROM_EMAIL;
 
   const response = await fetch(`${baseUrl}/api/tx`, {
     method: "POST",
@@ -44,19 +42,45 @@ export async function sendEmail(params: EmailParams): Promise<void> {
       Authorization: `Basic ${auth}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      subscriber_email: params.to,
-      template_id: Number(env.LISTMONK_TX_TEMPLATE_ID),
-      from_email: fromEmail,
-      data: { subject: params.subject, body },
-      content_type: "html",
-    }),
+    body: JSON.stringify(listmonkTxBody(params, env)),
   });
 
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Listmonk /api/tx error (${response.status}): ${text}`);
   }
+}
+
+/**
+ * The `/api/tx` body for one account email.
+ *
+ * `subscriber_mode: "external"` is what lets it reach anybody at all. Without
+ * it Listmonk uses its `default` mode, where the recipient must already be a
+ * subscriber, and answers 400 for everyone else — which is every person who
+ * signs up or resets a password, since none of them joined the newsletter.
+ * `external` also skips the subscriber lookup, so nothing about a person's
+ * newsletter state decides whether their reset arrives. `subscriber_email`
+ * stays singular; Listmonk folds it into `subscriber_emails`
+ * (`validateTxMessage`, checked in v6.0.0, the version the hosted deploy runs).
+ */
+export function listmonkTxBody(
+  params: EmailParams,
+  source: Pick<
+    typeof env,
+    "LISTMONK_FROM" | "LISTMONK_FROM_EMAIL" | "LISTMONK_TX_TEMPLATE_ID"
+  >,
+): Record<string, unknown> {
+  return {
+    subscriber_email: params.to,
+    subscriber_mode: "external",
+    template_id: Number(source.LISTMONK_TX_TEMPLATE_ID),
+    from_email: source.LISTMONK_FROM || source.LISTMONK_FROM_EMAIL,
+    data: {
+      subject: params.subject,
+      body: params.html ?? `<pre>${escapeHtml(params.text)}</pre>`,
+    },
+    content_type: "html",
+  };
 }
 
 function escapeHtml(s: string): string {
