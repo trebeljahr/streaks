@@ -8,6 +8,31 @@ export interface EmailParams {
 }
 
 /**
+ * True when `sendEmail` would deliver rather than log. Callers that log a
+ * link instead of mailing it (auth.ts) branch on this, so a partial
+ * Listmonk config logs the link instead of dropping it.
+ */
+export function isEmailDeliveryConfigured(
+  source: Pick<
+    typeof env,
+    | "LISTMONK_URL"
+    | "LISTMONK_API_USER"
+    | "LISTMONK_API_TOKEN"
+    | "LISTMONK_TX_TEMPLATE_ID"
+    | "LISTMONK_FROM"
+    | "LISTMONK_FROM_EMAIL"
+  > = env,
+): boolean {
+  return Boolean(
+    source.LISTMONK_URL &&
+      source.LISTMONK_API_USER &&
+      source.LISTMONK_API_TOKEN &&
+      source.LISTMONK_TX_TEMPLATE_ID &&
+      (source.LISTMONK_FROM || source.LISTMONK_FROM_EMAIL),
+  );
+}
+
+/**
  * Send a transactional email via Listmonk's /api/tx endpoint (which
  * relays through the SES SMTP identity configured at provision time).
  * Falls back to console logging when Listmonk isn't configured yet.
@@ -20,13 +45,7 @@ export interface EmailParams {
  * wrapped in a `<pre>` so the template still receives HTML.
  */
 export async function sendEmail(params: EmailParams): Promise<void> {
-  const ready =
-    env.LISTMONK_URL &&
-    env.LISTMONK_API_USER &&
-    env.LISTMONK_API_TOKEN &&
-    env.LISTMONK_TX_TEMPLATE_ID &&
-    (env.LISTMONK_FROM_EMAIL || env.LISTMONK_FROM);
-  if (!ready) {
+  if (!isEmailDeliveryConfigured()) {
     console.log(`[email] Would send to ${params.to}: ${params.subject}`);
     return;
   }

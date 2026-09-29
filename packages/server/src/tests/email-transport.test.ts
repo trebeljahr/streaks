@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { listmonkTxBody } from "../services/email.js";
+import { isEmailDeliveryConfigured, listmonkTxBody } from "../services/email.js";
 
 const source = {
   LISTMONK_FROM: "",
@@ -32,4 +32,25 @@ test("listmonk tx body falls back to LISTMONK_FROM_EMAIL and passes html through
   const body = listmonkTxBody({ ...params, html: "<p>hi</p>" }, source);
   assert.equal(body.from_email, "noreply@example.com");
   assert.deepEqual(body.data, { subject: "Verify", body: "<p>hi</p>" });
+});
+
+// auth.ts logs the reset or verification link when this is false. It used
+// to check only LISTMONK_URL and the template id, so a config missing the
+// token or From reached sendEmail, which then dropped the link unlogged.
+test("email delivery counts as configured only with the full Listmonk set", () => {
+  const full = {
+    LISTMONK_URL: "https://listmonk.example.com",
+    LISTMONK_API_USER: "streaks",
+    LISTMONK_API_TOKEN: "token",
+    LISTMONK_TX_TEMPLATE_ID: "1",
+    LISTMONK_FROM: "",
+    LISTMONK_FROM_EMAIL: "noreply@example.com",
+  };
+  assert.equal(isEmailDeliveryConfigured(full), true);
+  assert.equal(isEmailDeliveryConfigured({ ...full, LISTMONK_API_TOKEN: "" }), false);
+  assert.equal(isEmailDeliveryConfigured({ ...full, LISTMONK_FROM_EMAIL: "" }), false);
+  assert.equal(
+    isEmailDeliveryConfigured({ ...full, LISTMONK_FROM_EMAIL: "", LISTMONK_FROM: "Streaks <noreply@example.com>" }),
+    true,
+  );
 });

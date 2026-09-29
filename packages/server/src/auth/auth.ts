@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { MongoClient } from "mongodb";
 import { env, getTrustedOrigins } from "../config/env.js";
-import { sendEmail } from "../services/email.js";
+import { isEmailDeliveryConfigured, sendEmail } from "../services/email.js";
 
 /**
  * better-auth instance. Must be initialized AFTER mongoose.connect() because
@@ -30,7 +30,7 @@ export async function initAuth(): Promise<void> {
       enabled: true,
       requireEmailVerification: false, // Set to true once Listmonk + SES is configured
       async sendResetPassword({ user, url }: { user: { email: string }; url: string }) {
-        if (!env.LISTMONK_URL || !env.LISTMONK_TX_TEMPLATE_ID) {
+        if (!isEmailDeliveryConfigured()) {
           console.log(`[auth] Password reset URL for ${user.email}: ${url}`);
           return;
         }
@@ -41,8 +41,15 @@ export async function initAuth(): Promise<void> {
           html: `<p>Click <a href="${url}">here</a> to reset your password.</p>`,
         });
       },
+    },
+
+    // `sendVerificationEmail` is an `emailVerification` option, NOT an
+    // `emailAndPassword` one. Nested under the wrong key it is silently
+    // ignored — better-auth reads the key it declares and nothing else — so
+    // verification mail would never be sent, and nothing would say so.
+    emailVerification: {
       async sendVerificationEmail({ user, url }: { user: { email: string }; url: string }) {
-        if (!env.LISTMONK_URL || !env.LISTMONK_TX_TEMPLATE_ID) {
+        if (!isEmailDeliveryConfigured()) {
           console.log(`[auth] Verification URL for ${user.email}: ${url}`);
           return;
         }
