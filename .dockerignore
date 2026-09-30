@@ -1,0 +1,14 @@
+# Runtime configuration is provided by Coolify; no local credentials in images.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.key
+**/.npmrc
+**/.git
+**/node_modules
+**/.next
+**/*.tsbuildinfo

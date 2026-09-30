@@ -7,7 +7,6 @@ import { connectToDB, disconnectFromDB } from "./db/connection.js";
 import { connectRedis, disconnectRedis } from "./db/redis.js";
 import { initAuth, disconnectAuth } from "./auth/auth.js";
 import { setupWebSocket } from "./ws/handler.js";
-import { warnStripeStatus } from "./services/stripe.js";
 import { env } from "./config/env.js";
 
 const app = createApp();
@@ -23,12 +22,7 @@ async function start(): Promise<void> {
     // 2. Initialize auth (needs DB connection)
     await initAuth();
 
-    // 3. Surface "Stripe is not configured" warnings before serving
-    //    traffic so the gap is visible in dev terminals AND prod logs.
-    //    Non-fatal — non-Stripe features keep working.
-    warnStripeStatus();
-
-    // 4. Start listening
+    // 3. Start listening
     server.listen(env.PORT, () => {
       console.log(`[server] Listening on http://127.0.0.1:${env.PORT}`);
       console.log(`[server] Environment: ${env.NODE_ENV}`);

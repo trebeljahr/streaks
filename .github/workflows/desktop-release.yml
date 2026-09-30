@@ -49,6 +49,7 @@ jobs:
       - name: Build client static export
         run: pnpm build:client
         env:
+          NATIVE_BUILD: "1"
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
       - name: Compile Electron

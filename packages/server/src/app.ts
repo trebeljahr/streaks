@@ -7,7 +7,6 @@ import { toNodeHandler } from "better-auth/node";
 import { getAuth } from "./auth/auth.js";
 import { appRouter } from "./trpc/router.js";
 import { createContext } from "./trpc/context.js";
-import { handleStripeWebhook } from "./services/stripe.js";
 import { isDatabaseReady } from "./db/connection.js";
 import { notFoundHandler, errorHandler } from "./middleware/error-handler.js";
 import { env, getTrustedOrigins } from "./config/env.js";
@@ -37,13 +36,6 @@ export function createApp() {
       next(err);
     }
   });
-
-  // ── 2. Stripe webhook — needs raw body for signature verification ──
-  app.post(
-    "/api/stripe/webhook",
-    express.raw({ type: "application/json" }),
-    handleStripeWebhook,
-  );
 
   // ── 3. Body parsing (for everything else) ──────────────────────────
   app.use(express.json({ limit: "100kb" }));

@@ -26,7 +26,7 @@ RUN pnpm --filter @starter/server run build
 # so the runtime stage only needs the /prod tree. Requires the
 # package's `dist/` to exist first — that's why the build steps above
 # run before this one.
-RUN pnpm --filter @starter/server --prod deploy /prod
+RUN pnpm --filter @starter/server --prod --legacy deploy /prod
 
 # ── Stage 3: Production runtime ─────────────────────────────────────
 FROM node:24-bookworm-slim AS runtime

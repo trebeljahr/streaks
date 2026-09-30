@@ -46,6 +46,7 @@ services:
       # Pin client port — Coolify's app-level PORT (set for the server)
       # would otherwise bleed into every service.
       PORT: "6999"
+      HOSTNAME: "0.0.0.0"
       # Deliberately NO NEXT_PUBLIC_* here: Next.js inlines those into
       # the browser bundle when the image is BUILT, so runtime env on
       # this prebuilt container cannot affect them. They are passed as
