@@ -15,6 +15,9 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      # Prerendering initializes the auth client and requires an absolute URL.
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:5006
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,6 +32,8 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     needs: [verify]
+    env:
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:5006
     services:
       mongo-e2e:
         image: mongo:7
