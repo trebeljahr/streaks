@@ -5,6 +5,7 @@
 services:
   server:
     image: ${SERVER_IMAGE:-ghcr.io/trebeljahr/streaks-server:main}
+    pull_policy: always
     environment:
       PORT: "5276"
       MONGODB_URI: mongodb://mongo:27017/${DB_NAME:-app}
@@ -40,6 +41,7 @@ services:
 
   client:
     image: ${CLIENT_IMAGE:-ghcr.io/trebeljahr/streaks-client:main}
+    pull_policy: always
     environment:
       # Pin client port — Coolify's app-level PORT (set for the server)
       # would otherwise bleed into every service.
