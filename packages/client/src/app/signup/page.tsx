@@ -11,12 +11,14 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setNotice("");
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
@@ -29,6 +31,8 @@ export default function SignupPage() {
       const result = await signUp.email({ name, email, password });
       if (result.error) {
         setError(result.error.message ?? "Signup failed");
+      } else if (!result.data?.token) {
+        setNotice("Check your email to verify your account, then log in.");
       } else {
         router.push("/dashboard");
       }
@@ -50,6 +54,7 @@ export default function SignupPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {notice && <p role="status">{notice}</p>}
           {error && (
             <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive" data-testid="signup-error">
               {error}

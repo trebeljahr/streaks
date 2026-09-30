@@ -1,3 +1,4 @@
+import { logAuthLink, requireEmailVerification } from "./link-policy.js";
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { MongoClient } from "mongodb";
@@ -28,10 +29,10 @@ export async function initAuth(): Promise<void> {
 
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: false, // Set to true once Listmonk + SES is configured
+      requireEmailVerification: requireEmailVerification(isEmailConfigured()),
       async sendResetPassword({ user, url }: { user: { email: string }; url: string }) {
         if (!isEmailDeliveryConfigured()) {
-          console.log(`[auth] Password reset URL for ${user.email}: ${url}`);
+          logAuthLink("Password reset", user.email, url);
           return;
         }
         await sendEmail({
@@ -48,9 +49,12 @@ export async function initAuth(): Promise<void> {
     // ignored — better-auth reads the key it declares and nothing else — so
     // verification mail would never be sent, and nothing would say so.
     emailVerification: {
+      sendOnSignUp: requireEmailVerification(isEmailConfigured()),
+      sendOnSignIn: requireEmailVerification(isEmailConfigured()),
+      autoSignInAfterVerification: false,
       async sendVerificationEmail({ user, url }: { user: { email: string }; url: string }) {
         if (!isEmailDeliveryConfigured()) {
-          console.log(`[auth] Verification URL for ${user.email}: ${url}`);
+          logAuthLink("Verification", user.email, url);
           return;
         }
         await sendEmail({

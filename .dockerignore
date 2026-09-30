@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+
+# Recursive exclusions apply to every package and build stage.
 **/.env
 **/.env.*
 !**/.env.example
