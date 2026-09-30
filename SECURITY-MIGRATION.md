@@ -48,3 +48,19 @@ variants also require the CLI's isolated regression runner.
 Rollback is a local revert of the security commit followed by an explicitly
 approved deployment. Reverting restores the old exposure and logging behavior;
 prefer fixing configuration or using the documented opt-ins.
+
+## Runtime dependency update
+
+Use the manifests and lockfile from the same commit. The update advances Next,
+WebSocket, database, HTTP logging and mail dependencies to patched releases.
+Better Auth stays on its 1.6 patch line through a tilde range.
+
+The workspace overrides patch transitive versions still pinned by upstream
+packages. Most stay within the same major. `serialize-javascript` moves from 6
+to 7 while retaining CommonJS, and SockJS uses UUID 11's CommonJS `v4` export.
+Sharp moves from 0.34 to 0.35, and esbuild from 0.27 to 0.28. These require
+compatibility checks when removing the overrides or changing their parents.
+Use the Node 24 runtime configured by the container images. Install with the
+frozen lockfile; run the production audit and application tests before rollout.
+The docs and test dependencies appearing in a production audit are not proof
+that their development servers are exposed by the deployed app.
