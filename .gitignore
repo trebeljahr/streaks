@@ -72,3 +72,6 @@ docs-site/build/
 # Misc
 *.log
 npm-debug.log*
+
+# Commit encrypted configuration; private .env.keys stays ignored.
+!/packages/server/.env.production
