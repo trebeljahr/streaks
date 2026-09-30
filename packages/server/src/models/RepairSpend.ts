@@ -18,8 +18,8 @@ const repairSpendSchema = new Schema<IRepairSpend>(
   { timestamps: true },
 );
 
-// A day can only be repaired once. This is what makes spend idempotent:
-// a replayed request hits the unique index instead of crediting twice.
+// Legacy repair history remains readable. New spends commit atomically to
+// Practice.repairDays; keep this index for existing records.
 repairSpendSchema.index(
   { ownerId: 1, practiceId: 1, day: 1 },
   { unique: true },

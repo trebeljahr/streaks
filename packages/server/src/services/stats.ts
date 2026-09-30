@@ -53,9 +53,13 @@ export async function statsForPractice(
 
   const [byDay, spends] = await Promise.all([
     minutesByDay(ownerId, practiceId, since),
-    RepairSpend.find({ ownerId, practiceId, day: { $gte: since } }).lean(),
+    // Legacy spends remain readable; new repairs commit on the practice itself.
+    RepairSpend.find({ ownerId, practiceId }).lean(),
   ]);
-  const repaired = new Set(spends.map((s) => s.day));
+  const repaired = new Set([
+    ...spends.map((s) => s.day),
+    ...(practice.repairDays ?? []),
+  ]);
 
   const days: DayFlag[] = [];
   const creditedDays: string[] = [];
@@ -76,7 +80,7 @@ export async function statsForPractice(
   // from the earning history — otherwise a token could pay for itself.
   const earnedFrom = creditedDays.filter((d) => !repaired.has(d));
   const earned = countEarnedTokens(earnedFrom);
-  const allSpends = await RepairSpend.countDocuments({ ownerId, practiceId });
+  const allSpends = repaired.size;
   const bank = Math.max(0, Math.min(MAX_REPAIR_TOKENS, earned - allSpends));
 
   return {

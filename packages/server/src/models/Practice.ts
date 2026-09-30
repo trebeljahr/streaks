@@ -9,6 +9,8 @@ export interface IPractice extends Document {
   minimumMinutes: number;
   targetMinutes: number;
   cadence: Cadence;
+  /** Committed repairs; append-only so array length is the spending revision. */
+  repairDays: string[];
   archivedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -44,6 +46,10 @@ const practiceSchema = new Schema<IPractice>(
       type: cadenceSchema,
       required: true,
       default: () => ({ kind: "perWeek", times: 4 }),
+    },
+    repairDays: {
+      type: [String],
+      default: [],
     },
     // Soft archive: history is the reward surface, so nothing is ever deleted.
     archivedAt: { type: Date, sparse: true },
