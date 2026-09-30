@@ -2,6 +2,7 @@
   "name": "streaks",
   "version": "0.1.0",
   "private": true,
+  "main": "electron/main.js",
   "packageManager": "pnpm@11.1.2",
   "engines": {
     "node": ">=24"
