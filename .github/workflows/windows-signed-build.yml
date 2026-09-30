@@ -1,0 +1,62 @@
+name: Windows Signed Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-signed-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Generate desktop icons
+        run: pnpm icons:desktop
+      - name: Build static client
+        run: pnpm build:client
+        env:
+          NATIVE_BUILD: '1'
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://streaks.trebeljahr.com' }}
+      - run: pnpm electron:compile
+      - name: Install pinned signing module
+        shell: pwsh
+        run: Install-Module ArtifactSigning -RequiredVersion 0.1.20 -Scope CurrentUser -Repository PSGallery -Force
+      - name: Azure login with repository OIDC
+        uses: azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac # v2
+        with:
+          client-id: 15fa69ff-256f-40fd-be5a-992fd941a011
+          tenant-id: ce0c906e-8a84-4877-afd9-cdf103ddaacb
+          subscription-id: 4aaef5a5-286b-46a0-b9e4-84622e8fdc4f
+      - name: Build and sign app, uninstaller, and installer
+        run: pnpm exec electron-builder --win nsis --x64 --publish never --config electron-builder.windows-signing.cjs
+      - name: Verify signatures and installed payload
+        shell: pwsh
+        run: ./scripts/windows/verify.ps1
+      - name: Upload verified artifacts and signature evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: streaks-windows-signed-${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            release/*.exe
+            release/windows-signatures.json
