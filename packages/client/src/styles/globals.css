@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@plugin "tw-animate-css";
+@import "tw-animate-css";
 
 /* Dark mode via .dark class on a parent (matches shadcn convention). */
 @custom-variant dark (&:is(.dark *));

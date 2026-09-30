@@ -22,8 +22,8 @@ if [ -z "${CI:-}" ]; then
   # SeaweedFS S3 on port 9002
   if ! docker ps --format '{{.Names}}' | grep -q starter-e2e-seaweedfs; then
     docker run -d --name starter-e2e-seaweedfs -p 9002:8333 \
-      -e S3_BUCKET=starter-e2e \
-      --tmpfs /data chrislusf/seaweedfs:latest
+      -e S3_BUCKET=streaks-e2e \
+      --tmpfs /data chrislusf/seaweedfs:4.47
     echo "[e2e] Started SeaweedFS S3 on port 9002"
 
     # Wait for SeaweedFS. The image creates S3_BUCKET on startup.

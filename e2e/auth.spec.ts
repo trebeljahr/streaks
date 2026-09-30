@@ -19,18 +19,18 @@ test.afterAll(async () => {
 test.describe("Authentication", () => {
   test("can sign up a new account", async ({ page }) => {
     await signUpViaUI(page, TEST_USER);
-    await expect(page).toHaveURL("/dashboard");
+    await expect(page).toHaveURL(/\/dashboard\/?$/);
   });
 
   test("can sign out", async ({ page }) => {
     await signInViaUI(page, TEST_USER);
     await signOutViaUI(page);
-    await expect(page).toHaveURL("/login");
+    await expect(page).toHaveURL(/\/login\/?$/);
   });
 
   test("can sign in with existing account", async ({ page }) => {
     await signInViaUI(page, TEST_USER);
-    await expect(page).toHaveURL("/dashboard");
+    await expect(page).toHaveURL(/\/dashboard\/?$/);
   });
 
   test("shows error for invalid credentials", async ({ page }) => {
