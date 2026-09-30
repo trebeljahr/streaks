@@ -29,7 +29,7 @@ export async function initAuth(): Promise<void> {
 
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: requireEmailVerification(isEmailConfigured()),
+      requireEmailVerification: requireEmailVerification(isEmailDeliveryConfigured()),
       async sendResetPassword({ user, url }: { user: { email: string }; url: string }) {
         if (!isEmailDeliveryConfigured()) {
           logAuthLink("Password reset", user.email, url);
@@ -49,8 +49,8 @@ export async function initAuth(): Promise<void> {
     // ignored — better-auth reads the key it declares and nothing else — so
     // verification mail would never be sent, and nothing would say so.
     emailVerification: {
-      sendOnSignUp: requireEmailVerification(isEmailConfigured()),
-      sendOnSignIn: requireEmailVerification(isEmailConfigured()),
+      sendOnSignUp: requireEmailVerification(isEmailDeliveryConfigured()),
+      sendOnSignIn: requireEmailVerification(isEmailDeliveryConfigured()),
       autoSignInAfterVerification: false,
       async sendVerificationEmail({ user, url }: { user: { email: string }; url: string }) {
         if (!isEmailDeliveryConfigured()) {
