@@ -37,7 +37,6 @@ if [ -z "${CI:-}" ]; then
     docker run -d --name starter-e2e-seaweedfs -p 9002:8333 \
       -e S3_BUCKET=streaks-e2e \
       --tmpfs /data chrislusf/seaweedfs:4.47
-    echo "[e2e] Started SeaweedFS S3 on port 9002"
 
   for i in $(seq 1 30); do
     curl -s http://127.0.0.1:9002/ >/dev/null && break
