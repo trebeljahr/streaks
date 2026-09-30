@@ -64,3 +64,7 @@ Use the Node 24 runtime configured by the container images. Install with the
 frozen lockfile; run the production audit and application tests before rollout.
 The docs and test dependencies appearing in a production audit are not proof
 that their development servers are exposed by the deployed app.
+
+MongoDB 7 is pinned to one driver version across Mongoose, Better Auth, and
+direct imports. Removing that override requires checking that their `Db` and
+`MongoClient` types still agree.

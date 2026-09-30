@@ -11,6 +11,8 @@ allowBuilds:
   unrs-resolver: true
 
 overrides:
+  # Share one driver type across Mongoose, Better Auth, and direct imports.
+  "mongodb@>=7 <8": "7.7.0"
   # Security backports for transitive pins; see SECURITY-MIGRATION.md.
   "brace-expansion@>=1 <2": "^1.1.18"
   "brace-expansion@>=5 <6": "^5.0.9"
