@@ -87,9 +87,11 @@ export function listmonkTxBody(
   source: Pick<
     typeof env,
     "LISTMONK_FROM" | "LISTMONK_FROM_EMAIL" | "LISTMONK_TX_TEMPLATE_ID"
-  >,
+  > & { LISTMONK_REPLY_TO?: string },
 ): Record<string, unknown> {
+  if (/[\r\n]/.test(source.LISTMONK_REPLY_TO ?? "")) throw new Error("Invalid LISTMONK_REPLY_TO");
   return {
+    ...(source.LISTMONK_REPLY_TO?.trim() ? { headers: [{ "Reply-To": source.LISTMONK_REPLY_TO.trim() }] } : {}),
     subscriber_email: params.to,
     subscriber_mode: "external",
     template_id: Number(source.LISTMONK_TX_TEMPLATE_ID),

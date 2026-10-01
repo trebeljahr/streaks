@@ -54,3 +54,11 @@ test("email delivery counts as configured only with the full Listmonk set", () =
     true,
   );
 });
+
+
+test("Reply-To keeps one recipient and rejects header injection", () => {
+  const body = listmonkTxBody(params, { ...source, LISTMONK_REPLY_TO: "rico@trebeljahr.com" });
+  assert.deepEqual(body.headers, [{ "Reply-To": "rico@trebeljahr.com" }]);
+  assert.equal(body.subscriber_email, params.to);
+  assert.throws(() => listmonkTxBody(params, { ...source, LISTMONK_REPLY_TO: "hi@example.com\r\nBcc: other@example.com" }), /Invalid LISTMONK_REPLY_TO/);
+});
