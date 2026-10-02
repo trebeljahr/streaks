@@ -151,10 +151,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: [build-server, build-client]
-    # This gates only the CI webhook. The legacy Compose resource has its
-    # own Auto Deploy switch in Coolify; disable that before the first push.
-    # Enable this variable only after new image resources are healthy and
-    # secrets point at those resources.
+    # This gates the CI webhook. Verify the legacy Compose app's live watch
+    # path is .hatchkit/deploy-webhook before the first push; Auto Deploy
+    # can remain enabled when ordinary source changes do not match it.
+    # Enable this variable after image resources and secrets are ready.
     if: vars.STREAKS_IMAGE_ROLLOUT_READY == 'true'
     steps:
       # Tell Coolify to deploy. There is no Coolify API token here: each
