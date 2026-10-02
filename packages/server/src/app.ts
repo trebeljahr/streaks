@@ -10,6 +10,7 @@ import { createContext } from "./trpc/context.js";
 import { isDatabaseReady } from "./db/connection.js";
 import { notFoundHandler, errorHandler } from "./middleware/error-handler.js";
 import { env, getTrustedOrigins } from "./config/env.js";
+import { isDraining } from "./readiness.js";
 
 export function createApp() {
   const app = express();
@@ -53,10 +54,14 @@ export function createApp() {
   app.use("/api/trpc", trpcMiddleware);
 
   // ── 6. Health endpoint ─────────────────────────────────────────────
-  app.get("/api/health", (_req, res) => {
+  app.get("/api/health", (req, res) => {
+    const db = isDatabaseReady();
+    const peer = req.socket.remoteAddress;
+    const localProbe = peer === "127.0.0.1" || peer === "::1" || peer === "::ffff:127.0.0.1";
+    if (!db || (isDraining() && localProbe)) res.status(503);
     res.json({
-      status: "ok",
-      db: isDatabaseReady(),
+      status: isDraining() ? "draining" : db ? "ok" : "unready",
+      db,
       timestamp: new Date().toISOString(),
     });
   });

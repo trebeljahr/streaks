@@ -8,6 +8,7 @@ import { connectRedis, disconnectRedis } from "./db/redis.js";
 import { initAuth, disconnectAuth } from "./auth/auth.js";
 import { setupWebSocket } from "./ws/handler.js";
 import { env } from "./config/env.js";
+import { beginDrain } from "./readiness.js";
 
 const app = createApp();
 const server = createServer(app);
@@ -35,8 +36,25 @@ async function start(): Promise<void> {
 
 // ── Graceful shutdown ──────────────────────────────────────────────────
 
+let stopping = false;
 async function shutdown(signal: string): Promise<void> {
+  if (stopping) return;
+  stopping = true;
   console.log(`\n[server] ${signal} received, shutting down gracefully...`);
+
+  // PID 1 is Node. Fail the local readiness probe before closing sockets so
+  // Traefik can stop routing to this instance during an overlapping rollout.
+  beginDrain();
+  const drainSeconds = Number(process.env.SHUTDOWN_DRAIN_SECONDS ?? 0);
+  if (signal === "SIGTERM" && Number.isFinite(drainSeconds) && drainSeconds > 0) {
+    await new Promise((resolve) => setTimeout(resolve, drainSeconds * 1000));
+  }
+
+  const forceExit = setTimeout(() => {
+    console.error("[server] Forced exit after shutdown timeout");
+    process.exit(1);
+  }, 10_000);
+  forceExit.unref();
 
   // Close all WebSocket connections
   for (const client of wss.clients) {
@@ -44,7 +62,7 @@ async function shutdown(signal: string): Promise<void> {
   }
 
   // Stop accepting new connections
-  server.close();
+  await new Promise<void>((resolve) => server.close(() => resolve()));
 
   // Disconnect from databases and auth
   await disconnectAuth();
@@ -55,16 +73,7 @@ async function shutdown(signal: string): Promise<void> {
   process.exit(0);
 }
 
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT", () => shutdown("SIGINT"));
-
-// Force exit after 10 seconds
-const FORCE_EXIT_MS = 10_000;
-process.on("SIGTERM", () => {
-  setTimeout(() => {
-    console.error("[server] Forced exit after timeout");
-    process.exit(1);
-  }, FORCE_EXIT_MS).unref();
-});
+process.on("SIGTERM", () => void shutdown("SIGTERM"));
+process.on("SIGINT", () => void shutdown("SIGINT"));
 
 start();

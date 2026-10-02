@@ -41,6 +41,8 @@ RUN pnpm --filter @starter/client run build
 # ── Stage 3: Production runtime ─────────────────────────────────────
 FROM node:24-bookworm-slim AS runtime
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 ENV PORT=6999
@@ -50,11 +52,15 @@ ENV HOSTNAME=0.0.0.0
 COPY --from=build /app/packages/client/.next/standalone ./
 COPY --from=build /app/packages/client/.next/static ./packages/client/.next/static
 COPY --from=build /app/packages/client/public ./packages/client/public
+COPY drain.cjs ./drain.cjs
+
+ENV SHUTDOWN_DRAIN_SECONDS=20
+ENV HEALTH_CHECK_PATH=/
 
 USER node
 EXPOSE 6999
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=5 \
-  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||'6999')).then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+HEALTHCHECK --interval=2s --timeout=5s --start-period=15s --retries=5 \
+  CMD curl --fail --silent --show-error "http://127.0.0.1:${PORT:-6999}/" >/dev/null
 
-CMD ["node", "packages/client/server.js"]
+CMD ["node", "--require", "./drain.cjs", "packages/client/server.js"]

@@ -31,9 +31,12 @@ RUN pnpm --filter @starter/server --prod --legacy deploy /prod
 # ── Stage 3: Production runtime ─────────────────────────────────────
 FROM node:24-bookworm-slim AS runtime
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 ENV PORT=5276
+ENV SHUTDOWN_DRAIN_SECONDS=20
 
 # Self-contained prod bundle from `pnpm deploy` — dist + package.json +
 # node_modules (with @starter/shared materialised, no symlinks).
@@ -44,7 +47,7 @@ COPY --from=build /prod/node_modules ./node_modules
 USER node
 EXPOSE 5276
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=5 \
-  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||'5276')+'/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+HEALTHCHECK --interval=2s --timeout=5s --start-period=15s --retries=5 \
+  CMD curl --fail --silent --show-error "http://127.0.0.1:${PORT:-5276}/api/health" >/dev/null
 
 CMD ["node", "dist/index.js"]
