@@ -50,7 +50,10 @@
     "mobile:assets": "capacitor-assets generate --iconBackgroundColor '#ffffff'",
     "newsletter:test-tx": "tsx scripts/newsletter-test-tx.ts",
     "newsletter:welcome": "tsx scripts/newsletter-welcome.ts",
-    "newsletter:verify": "tsx scripts/newsletter-verify.ts"
+    "newsletter:verify": "tsx scripts/newsletter-verify.ts",
+    "backup:status": "hatchkit backup status --project streaks",
+    "backup:list": "hatchkit backup snapshots --project streaks",
+    "backup:restore": "hatchkit backup restore --project streaks"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
