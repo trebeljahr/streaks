@@ -8,8 +8,10 @@ services:
     pull_policy: always
     environment:
       PORT: "5276"
-      MONGODB_URI: mongodb://mongo:27017/${DB_NAME:-app}
-      REDIS_URL: redis://redis:6379
+      # Coolify-managed MongoDB on the shared `coolify` network (the app has
+      # "Connect to Predefined Network" on). No in-stack datastore: a
+      # Docker Image app has no compose to hold one. Redis is unused.
+      MONGODB_URI: ${MONGODB_URI}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       AUTH_LOG_LINKS: ${AUTH_LOG_LINKS:-false}
       AUTH_REQUIRE_EMAIL_VERIFICATION: ${AUTH_REQUIRE_EMAIL_VERIFICATION:-true}
@@ -37,9 +39,6 @@ services:
       SENTRY_DSN: ${SENTRY_DSN:-}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-    depends_on:
-      - mongo
-      - redis
     restart: unless-stopped
 
   client:
@@ -56,20 +55,3 @@ services:
       # Docker build args in .github/workflows/build-and-deploy.yml.
     restart: unless-stopped
 
-  mongo:
-    image: mongo:7
-    volumes:
-      - mongo-data:/data/db
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
-volumes:
-  mongo-data:
