@@ -9,6 +9,7 @@ import { appRouter } from "./trpc/router.js";
 import { createContext } from "./trpc/context.js";
 import { isDatabaseReady } from "./db/connection.js";
 import { notFoundHandler, errorHandler } from "./middleware/error-handler.js";
+import { restoreApiPrefix } from "./middleware/api-prefix.js";
 import { env, getTrustedOrigins } from "./config/env.js";
 import { isDraining } from "./readiness.js";
 
@@ -16,6 +17,9 @@ export function createApp() {
   const app = express();
 
   app.set("trust proxy", 1);
+
+  // Coolify may strip the /api route prefix; put it back before routing.
+  app.use(restoreApiPrefix);
 
   // ── 0. CORS — must be before all route handlers so preflight works ─
   const trustedOrigins = getTrustedOrigins();
