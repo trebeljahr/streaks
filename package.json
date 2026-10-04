@@ -82,6 +82,7 @@
   "build": {
     "appId": "com.example.streaks",
     "productName": "streaks",
+    "electronLanguages": ["en", "en-US"],
     "directories": {
       "output": "release",
       "buildResources": "build"
