@@ -157,6 +157,33 @@ jobs:
     # Enable this variable after image resources and secrets are ready.
     if: vars.STREAKS_IMAGE_ROLLOUT_READY == 'true'
     steps:
+      # Point `:live` at the images this run built. Every Coolify app
+      # pulls `:live` (hatchkit sets that when it wires the app), so
+      # this is what decides which build the deploy below starts — the
+      # immutable `:<sha>` tag, re-published under the name the apps
+      # read. It uses this job's own GITHUB_TOKEN (`packages: write`),
+      # which can write this repository's packages and nothing else; no
+      # Coolify credential is involved.
+      #
+      # A rollback is the same step with an older sha.
+      - name: Promote this commit's images to :live
+        env:
+          COOLIFY_BASE_URL: ${{ secrets.COOLIFY_BASE_URL }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: env.COOLIFY_BASE_URL != ''
+        run: |
+          set -euo pipefail
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          for half in server client; do
+            image="ghcr.io/${{ github.repository }}-$half"
+            if ! docker buildx imagetools inspect "$image:${{ github.sha }}" >/dev/null 2>&1; then
+              echo "no $image:${{ github.sha }} — this project has no $half image"
+              continue
+            fi
+            docker buildx imagetools create --tag "$image:live" "$image:${{ github.sha }}"
+            echo "promoted $image:${{ github.sha }} to :live"
+          done
+
       # Tell Coolify to deploy. There is no Coolify API token here: each
       # app has its own webhook secret (hatchkit mints it), and a `push`
       # payload signed with it queues a deploy of that one app — it can
