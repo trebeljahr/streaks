@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@hatchkit/dev-plugin-next": "^0.2.18",
-    "@openpanel/nextjs": "^1.5.1",
     "@sentry/nextjs": "^10.75.3",
     "@starter/shared": "workspace:*",
     "@tanstack/react-query": "^5.104.0",

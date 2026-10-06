@@ -127,11 +127,10 @@ jobs:
           # hatchkit at scaffold time (and kept in sync by
           # `hatchkit regen-infra` / `hatchkit rename-domain`). The
           # analytics values are optional GitHub Actions repo VARIABLES
-          # (not secrets): gh variable set NEXT_PUBLIC_OPENPANEL_CLIENT_ID ...
+          # (not secrets): gh variable set NEXT_PUBLIC_PLAUSIBLE_DOMAIN ...
           build-args: |
             NEXT_PUBLIC_API_URL=https://streaks.trebeljahr.com
             NEXT_PUBLIC_WS_URL=wss://streaks.trebeljahr.com
-            NEXT_PUBLIC_OPENPANEL_CLIENT_ID=${{ vars.NEXT_PUBLIC_OPENPANEL_CLIENT_ID }}
             NEXT_PUBLIC_PLAUSIBLE_DOMAIN=${{ vars.NEXT_PUBLIC_PLAUSIBLE_DOMAIN }}
             NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL=${{ vars.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL }}
             NEXT_PUBLIC_SENTRY_DSN=${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
