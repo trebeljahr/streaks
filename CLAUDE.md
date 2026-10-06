@@ -13,7 +13,7 @@ Useful Hatchkit commands from inside a generated project:
 ```bash
 hatchkit overview --json                 # inspect manifest/project state
 hatchkit update                          # add supported features additively
-hatchkit add <project> [services]        # provision GlitchTip/OpenPanel/Plausible/Listmonk+SES/S3/email/search
+hatchkit add <project> [services]        # provision GlitchTip/Plausible/Listmonk+SES/S3/email/search
 hatchkit keys push <project>             # push dotenvx private key to Coolify/GitHub Actions
 hatchkit sync                            # sync/deploy existing project state
 hatchkit rename-domain                   # update domain-related deploy config
