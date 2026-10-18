@@ -54,5 +54,6 @@
   "containerPorts": {
     "client": 6999,
     "server": 5276
-  }
+  },
+  "clientHost": "cloudflare"
 }
