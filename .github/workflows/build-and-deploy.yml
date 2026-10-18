@@ -109,37 +109,70 @@ jobs:
             ghcr.io/${{ github.repository }}-server:main
             ghcr.io/${{ github.repository }}-server:${{ github.sha }}
 
+  # The client is a static export served by the Cloudflare Worker
+  # streaks-client (hatchkit clientHost "cloudflare"). This job uploads a
+  # Worker version and activates nothing; deploy-client switches to it
+  # once the server reports this commit.
   build-client:
     runs-on: ubuntu-latest
     needs: [verify, e2e]
+    outputs:
+      version_id: ${{ steps.upload.outputs.version_id }}
+    env:
+      SITE_URL: https://streaks.trebeljahr.com
+      WRANGLER: wrangler@4
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: packages/client/Dockerfile
-          push: true
-          # NEXT_PUBLIC_* are inlined into the browser bundle at image
-          # BUILD time — setting them as runtime env on the deployed
-          # container does nothing. The URL values below are written by
-          # hatchkit at scaffold time (and kept in sync by
-          # `hatchkit regen-infra` / `hatchkit rename-domain`). The
-          # analytics values are optional GitHub Actions repo VARIABLES
-          # (not secrets): gh variable set NEXT_PUBLIC_PLAUSIBLE_DOMAIN ...
-          build-args: |
-            NEXT_PUBLIC_API_URL=https://streaks.trebeljahr.com
-            NEXT_PUBLIC_WS_URL=wss://streaks.trebeljahr.com
-            NEXT_PUBLIC_PLAUSIBLE_DOMAIN=${{ vars.NEXT_PUBLIC_PLAUSIBLE_DOMAIN }}
-            NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL=${{ vars.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL }}
-            NEXT_PUBLIC_SENTRY_DSN=${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
-          tags: |
-            ghcr.io/${{ github.repository }}-client:main
-            ghcr.io/${{ github.repository }}-client:${{ github.sha }}
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # NEXT_PUBLIC_* are inlined into the bundle at build time.
+      - name: Build the static client
+        env:
+          NEXT_FILE_EXPORT: "1"
+          NEXT_PUBLIC_API_URL: https://streaks.trebeljahr.com
+          NEXT_PUBLIC_WS_URL: wss://streaks.trebeljahr.com
+          NEXT_PUBLIC_PLAUSIBLE_DOMAIN: "${{ vars.NEXT_PUBLIC_PLAUSIBLE_DOMAIN }}"
+          NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL: "${{ vars.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL }}"
+          NEXT_PUBLIC_SENTRY_DSN: "${{ vars.NEXT_PUBLIC_SENTRY_DSN }}"
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          pnpm --filter @starter/shared run build
+          pnpm --filter @starter/client run build
+          test -n "$NEXT_PUBLIC_API_URL" || { echo "::error::NEXT_PUBLIC_API_URL is empty"; exit 1; }
+          # Set and still never inlined (a renamed variable, a server-only
+          # reference) builds green and talks to the wrong API.
+          grep -rqF "$NEXT_PUBLIC_API_URL" packages/client/out/_next/static \
+            || { echo "::error::NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL never reached the bundle"; exit 1; }
+          # A relative asset prefix breaks every nested route's chunks.
+          if grep -rlF '"./_next' packages/client/out --include='*.html' | grep -q .; then
+            echo "::error::exported HTML references ./_next — drop the relative assetPrefix"; exit 1
+          fi
+          printf '{"commit":"%s","apiUrl":"%s"}\n' "$COMMIT_SHA" "$NEXT_PUBLIC_API_URL" > packages/client/out/version.json
+
+      # A Worker version serves only its own files. Carry the last two
+      # releases' hashed files so tabs opened before this deploy keep
+      # loading their chunks.
+      - name: Carry earlier releases' hashed files
+        run: node scripts/carry-static.mjs --site "$SITE_URL" --out packages/client/out
+
+      - name: Upload a new Worker version (not live yet)
+        id: upload
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler-upload.ndjson
+        run: |
+          set -euo pipefail
+          pnpm dlx "$WRANGLER" versions upload --tag "$GITHUB_SHA" --message "$GITHUB_SHA"
+          id=$(node -e 'const rows=require("fs").readFileSync(process.argv[1],"utf8").trim().split("\n").map((l)=>JSON.parse(l));const row=rows.find((r)=>r.type==="version-upload");if(!row?.version_id)process.exit(1);console.log(row.version_id)' "$WRANGLER_OUTPUT_FILE_PATH")
+          echo "version_id=$id" >> "$GITHUB_OUTPUT"
+          echo "Uploaded Worker version $id (not live yet)"
 
   # Single deploy job — Hatchkit registers ONE Coolify app per project
   # (a single dockercompose pulling both ghcr.io/<owner>/<repo>-server
@@ -153,6 +186,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: [build-server, build-client]
+    outputs:
+      server_deployed: ${{ steps.server-deployed.outputs.deployed }}
     # This gates the CI webhook. Verify the legacy Compose app's live watch
     # path is .hatchkit/deploy-webhook before the first push; Auto Deploy
     # can remain enabled when ordinary source changes do not match it.
@@ -249,8 +284,94 @@ jobs:
           }
           deploy app COOLIFY_
           deploy server COOLIFY_SERVER_
-          deploy client COOLIFY_CLIENT_
           if [ "$deployed" -eq 0 ]; then
             echo "::error::COOLIFY_BASE_URL is set but no COOLIFY_*RESOURCE_UUID is — nothing was deployed."
             exit 1
           fi
+
+      - name: Record that the server half was deployed
+        id: server-deployed
+        env:
+          COOLIFY_BASE_URL: ${{ secrets.COOLIFY_BASE_URL }}
+        if: env.COOLIFY_BASE_URL != ''
+        run: echo "deployed=true" >> "$GITHUB_OUTPUT"
+
+  # Server first, then the client: deploy-client waits until the server
+  # reports this commit, switches the Worker in one step, and checks
+  # /version.json.
+  deploy-client:
+    runs-on: ubuntu-latest
+    needs: [build-client, deploy]
+    if: needs.deploy.outputs.server_deployed == 'true'
+    env:
+      SITE_URL: https://streaks.trebeljahr.com
+      API_URL: https://streaks.trebeljahr.com
+      WRANGLER: wrangler@4
+    steps:
+      - name: Wait for the server at this commit
+        run: |
+          set -uo pipefail
+          for i in $(seq 1 40); do
+            got=$(curl -fsSL --max-time 10 "$API_URL/api/health?hatchkit_cb=$i$RANDOM" 2>/dev/null | jq -r '.version // empty' 2>/dev/null || true)
+            if [ "$got" = "$GITHUB_SHA" ]; then echo "✓ server reports $GITHUB_SHA"; exit 0; fi
+            echo "  server: ${got:-<no version>} — waiting ($i/40)"
+            sleep 15
+          done
+          echo "::error::the server never reported $GITHUB_SHA on /api/health .version; the client was not switched."
+          echo "::error::A server that reports no version needs \`version: process.env.COMMIT_SHA\` on /api/health."
+          exit 1
+
+      - name: Switch the client to this commit's Worker version
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VERSION_ID: ${{ needs.build-client.outputs.version_id }}
+        run: npx --yes "$WRANGLER" versions deploy "$VERSION_ID@100%" --name streaks-client --message "$GITHUB_SHA" --yes
+
+      - name: Verify the client is live
+        run: |
+          set -uo pipefail
+          for i in $(seq 1 24); do
+            body=$(curl -fsSL --max-time 10 "$SITE_URL/version.json?hatchkit_cb=$i$RANDOM" 2>/dev/null || true)
+            commit=$(printf '%s' "$body" | jq -r '.commit // empty' 2>/dev/null || true)
+            if [ "$commit" = "$GITHUB_SHA" ]; then
+              baked=$(printf '%s' "$body" | jq -r '.apiUrl // empty')
+              if [ "$baked" != "$API_URL" ]; then
+                echo "::error::client is built against '${baked:-<empty>}', expected '$API_URL'"; exit 1
+              fi
+              echo "✓ $SITE_URL serves $GITHUB_SHA, built against $baked"; exit 0
+            fi
+            echo "  web: ${commit:-<no response>} — waiting ($i/24)"
+            sleep 5
+          done
+          echo "::error::$SITE_URL/version.json never reported $GITHUB_SHA"; exit 1
+
+  # Always runs, so a half-finished release says which half is live.
+  release-summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [build-server, build-client, deploy, deploy-client]
+    steps:
+      - name: Which half is live
+        env:
+          SERVER: ${{ needs.deploy.result }}
+          SERVER_DEPLOYED: ${{ needs.deploy.outputs.server_deployed }}
+          CLIENT: ${{ needs.deploy-client.result }}
+          VERSION_ID: ${{ needs.build-client.outputs.version_id }}
+        run: |
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          if [ "$SERVER" != "success" ]; then
+            say "::error::Server deploy did not finish ($SERVER). The client was NOT switched: the previous Worker version still serves."
+            exit 1
+          fi
+          if [ "$SERVER_DEPLOYED" != "true" ]; then
+            say "Deploys are gated off: nothing went live. Worker version ${VERSION_ID:-<none>} was uploaded, not activated."
+            exit 0
+          fi
+          if [ "$CLIENT" = "success" ]; then
+            say "Server and client are both live at $GITHUB_SHA."
+            exit 0
+          fi
+          say "::error::Server $GITHUB_SHA is LIVE. The client is NOT ($CLIENT): the previous Worker version still serves."
+          say "To switch by hand: npx wrangler versions deploy ${VERSION_ID:-<id>}@100% --name streaks-client --yes"
+          exit 1

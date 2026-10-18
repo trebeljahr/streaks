@@ -1,0 +1,18 @@
+{
+  // Client of a hatchkit project, served by Cloudflare Workers static
+  // assets on the route <domain>/* (hatchkit clientHost "cloudflare").
+  // Routes are made by `hatchkit migrate-client`, never here: with no
+  // "routes" key wrangler leaves them alone.
+  //
+  // Do not add "main", "run_worker_first" or "cache": each one turns free
+  // asset requests into counted Worker requests (Workers Free: 100,000 a
+  // day per account; over the cap run_worker_first paths answer 429).
+  "name": "streaks-client",
+  "compatibility_date": "2026-10-04",
+  "assets": {
+    "directory": "./packages/client/out",
+    // The export's 404.html for unknown paths, never an SPA fallback.
+    "not_found_handling": "404-page"
+  },
+  "workers_dev": false
+}
