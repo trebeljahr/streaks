@@ -11,12 +11,28 @@ import { isDatabaseReady } from "./db/connection.js";
 import { notFoundHandler, errorHandler } from "./middleware/error-handler.js";
 import { restoreApiPrefix } from "./middleware/api-prefix.js";
 import { env, getTrustedOrigins } from "./config/env.js";
-import { isDraining } from "./readiness.js";
+import { isDraining, isProxyDraining, isTraefikProbe } from "./readiness.js";
 
 export function createApp() {
   const app = express();
 
   app.set("trust proxy", 1);
+
+  // Traefik's drain probe — ahead of everything, so a request that arrives
+  // every few seconds skips CORS, logging and the database. It reports only
+  // whether this container is draining; readiness is the /api/health check
+  // Docker runs. Traefik sends it straight to this container with an
+  // X-Hatchkit-Drain header; a visitor's request is forwarded by Traefik,
+  // which always adds X-Forwarded-For, so a visitor can't pose as it.
+  app.use((req, res, next) => {
+    if (!isTraefikProbe(req.headers)) return next();
+    const draining = isProxyDraining();
+    res
+      .status(draining ? 503 : 200)
+      .set("cache-control", "no-store")
+      .type("text/plain")
+      .send(draining ? "draining\n" : "serving\n");
+  });
 
   // Coolify may strip the /api route prefix; put it back before routing.
   app.use(restoreApiPrefix);

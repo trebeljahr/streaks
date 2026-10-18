@@ -44,8 +44,8 @@ async function shutdown(signal: string): Promise<void> {
 
   // PID 1 is Node. Fail the local readiness probe before closing sockets so
   // Traefik can stop routing to this instance during an overlapping rollout.
-  beginDrain();
   const drainSeconds = Number(process.env.SHUTDOWN_DRAIN_SECONDS ?? 0);
+  beginDrain(signal === "SIGTERM" && Number.isFinite(drainSeconds) ? drainSeconds : 0);
   if (signal === "SIGTERM" && Number.isFinite(drainSeconds) && drainSeconds > 0) {
     await new Promise((resolve) => setTimeout(resolve, drainSeconds * 1000));
   }
