@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Smoke tests", () => {
   test("landing page loads", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("Welcome to My App")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Two minutes counts." })).toBeVisible();
   });
 
   test("login page loads", async ({ page }) => {
