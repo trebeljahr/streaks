@@ -22,15 +22,28 @@ import type { NextConfig } from "next";
  */
 const isNativeBuild = process.env.NATIVE_BUILD === "1";
 
-if (process.env.HATCHKIT_IMAGE_BUILD === "1" && !process.env.NEXT_PUBLIC_API_URL) {
-  throw new Error("NEXT_PUBLIC_API_URL is required for the production image");
+/*
+ * NEXT_FILE_EXPORT=1 is the web client's static export, served from a
+ * Cloudflare Worker (wrangler.jsonc). Same `out/` directory as the native
+ * export, but root-relative assets: no assetPrefix.
+ */
+const isWebExport = process.env.NEXT_FILE_EXPORT === "1" && !isNativeBuild;
+const isExport = isNativeBuild || isWebExport;
+
+if (
+  (isWebExport || process.env.HATCHKIT_IMAGE_BUILD === "1") &&
+  !process.env.NEXT_PUBLIC_API_URL
+) {
+  throw new Error("NEXT_PUBLIC_API_URL is required for the production web build");
 }
 
 const nextConfig: NextConfig = {
-  output: isNativeBuild ? "export" : "standalone",
-  ...(!isNativeBuild
-    ? { outputFileTracingRoot: path.resolve(process.cwd(), "../..") }
-    : {}),
+  ...(isExport
+    ? { output: "export" as const }
+    : {
+        output: "standalone" as const,
+        outputFileTracingRoot: path.resolve(process.cwd(), "../.."),
+      }),
   /*
    * Next 16 blocks dev-server asset and HMR requests from origins it does
    * not recognise. Reaching the dev server over 127.0.0.1 (as Playwright
@@ -39,7 +52,7 @@ const nextConfig: NextConfig = {
    * renders but never hydrates, so forms fall back to a native submit.
    */
   allowedDevOrigins: ["localhost", "127.0.0.1", "0.0.0.0"],
-  ...(isNativeBuild ? { assetPrefix: "./" } : {}),
+  assetPrefix: isNativeBuild ? "./" : undefined,
   trailingSlash: true,
   images: { unoptimized: true },
   transpilePackages: ["@starter/server", "@starter/shared"],
