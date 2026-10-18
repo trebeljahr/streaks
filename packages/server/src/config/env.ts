@@ -108,6 +108,10 @@ export const env = {
   // Monitoring
   SENTRY_DSN: getOptional("SENTRY_DSN"),
 
+  // The commit this image was built from (Dockerfile build arg). Empty
+  // for a locally run server.
+  COMMIT_SHA: getOptional("COMMIT_SHA"),
+
   isProduction: getOptional("NODE_ENV") === "production",
   isTest: getOptional("NODE_ENV") === "test",
 } as const;

@@ -66,6 +66,10 @@ export function createApp() {
     res.json({
       status: isDraining() ? "draining" : db ? "ok" : "unready",
       db,
+      // The deploy workflow waits for this to equal the commit it pushed
+      // before it switches the client (Cloudflare Worker) over. Empty
+      // for a locally run server; treat it as optional.
+      version: env.COMMIT_SHA,
       timestamp: new Date().toISOString(),
     });
   });

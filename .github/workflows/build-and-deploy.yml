@@ -102,6 +102,9 @@ jobs:
           context: .
           file: packages/server/Dockerfile
           push: true
+          # Reported as /api/health .version; deploy-client waits for it.
+          build-args: |
+            COMMIT_SHA=${{ github.sha }}
           tags: |
             ghcr.io/${{ github.repository }}-server:main
             ghcr.io/${{ github.repository }}-server:${{ github.sha }}

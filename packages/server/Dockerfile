@@ -38,6 +38,12 @@ ENV NODE_ENV=production
 ENV PORT=5276
 ENV SHUTDOWN_DRAIN_SECONDS=20
 
+# The commit this image was built from, reported as /api/health .version.
+# The deploy workflow switches the client only once the server reports
+# the commit it just pushed.
+ARG COMMIT_SHA
+ENV COMMIT_SHA=$COMMIT_SHA
+
 # Self-contained prod bundle from `pnpm deploy` — dist + package.json +
 # node_modules (with @starter/shared materialised, no symlinks).
 COPY --from=build /prod/dist ./dist
