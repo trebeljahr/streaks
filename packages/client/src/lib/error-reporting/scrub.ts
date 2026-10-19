@@ -66,7 +66,7 @@ const ALLOWED_BREADCRUMBS: ReadonlySet<string> = new Set([
   "xhr",
 ]);
 
-const EMAIL = /[^\s@<>"'(),;:]+@[^\s@<>"'(),;:]+\.[a-z]{2,}/gi;
+const EMAIL = /[^\s@<>"'(),;:/]+@[^\s@<>"'(),;:/]+\.[a-z]{2,}/gi;
 const BEARER = /\bBearer\s+[\w.~+/=-]+/gi;
 const QUERY_IN_TEXT = /[?#][^\s"'<>]*/g;
 const URL_IN_TEXT = /(?:\b[a-z][\w+.-]*:\/\/|(?<![\w.])\/)[^\s"'<>?#]*(?:[?#]\S*)?/gi;
