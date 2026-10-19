@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 5,
   "cliVersion": "0.2.18",
   "scaffoldedAt": "2026-08-24T07:54:52.064Z",
   "name": "streaks",
@@ -55,5 +55,34 @@
     "client": 6999,
     "server": 5276
   },
-  "clientHost": "cloudflare"
+  "clientHost": "cloudflare",
+  "topology": "single-origin",
+  "identifiers": {
+    "slug": "streaks",
+    "token": "streaks",
+    "productName": "streaks",
+    "shortName": "streaks",
+    "orgDomain": "example.com",
+    "bundleId": "com.example.streaks",
+    "storagePrefix": "streaks",
+    "keychainService": "streaks",
+    "clientHeader": "x-streaks-client",
+    "webhookHeaderPrefix": "X-Streaks-",
+    "clientIds": {
+      "desktop": "streaks-desktop",
+      "mobile": "streaks-mobile",
+      "extension": "streaks-extension",
+      "raycast": "streaks-raycast",
+      "mcp": "streaks-mcp",
+      "cli": "streaks-cli"
+    },
+    "databaseName": "streaks",
+    "exportFilePrefix": "streaks",
+    "envPrefix": "STREAKS",
+    "npmScope": "@streaks",
+    "desktopOrigin": {
+      "scheme": "app",
+      "host": "-"
+    }
+  }
 }
