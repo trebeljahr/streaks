@@ -84,5 +84,20 @@
       "scheme": "app",
       "host": "-"
     }
+  },
+  "integrations": {
+    "email": {
+      "domain": "streaks.trebeljahr.com",
+      "configuredAt": "2026-10-19T05:44:45.686Z",
+      "destinationEmail": "ricotrebeljahr@gmail.com",
+      "addresses": [
+        "hello",
+        "admin",
+        "support",
+        "imprint",
+        "privacy"
+      ],
+      "catchAll": false
+    }
   }
 }
