@@ -88,16 +88,18 @@
   "integrations": {
     "email": {
       "domain": "streaks.trebeljahr.com",
-      "configuredAt": "2026-10-19T05:44:45.686Z",
+      "configuredAt": "2026-10-19T10:23:44.647Z",
       "destinationEmail": "ricotrebeljahr@gmail.com",
       "addresses": [
         "hello",
         "admin",
         "support",
         "imprint",
-        "privacy"
+        "privacy",
+        "dmarc"
       ],
-      "catchAll": false
+      "catchAll": false,
+      "addressDestinations": {}
     }
   }
 }
