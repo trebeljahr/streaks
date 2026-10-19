@@ -40,12 +40,14 @@ export default function LandingPage() {
             Sign up
           </Link>
         </div>
-        <Link
-          href="/privacy"
-          className="mt-8 inline-block text-sm text-muted-foreground underline"
-        >
-          Privacy
-        </Link>
+        <div className="mt-8 flex justify-center gap-4 text-sm text-muted-foreground">
+          <Link href="/privacy" className="underline">
+            Privacy
+          </Link>
+          <Link href="/imprint" className="underline">
+            Imprint
+          </Link>
+        </div>
       </main>
     </div>
   );
