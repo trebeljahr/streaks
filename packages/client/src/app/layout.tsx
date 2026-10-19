@@ -3,6 +3,7 @@ import { DM_Mono, Outfit, Sora } from "next/font/google";
 import { TRPCProvider } from "@/providers/trpc-provider";
 import { AuthProvider } from "@/providers/auth-provider";
 import { MobileBridgeLoader } from "@/mobile/MobileBridgeLoader";
+import { ErrorReporting } from "@/components/error-reporting";
 import "@/styles/globals.css";
 
 // Sora for display, Outfit for the interface, DM Mono for anything that
@@ -53,6 +54,7 @@ export default function RootLayout({
         )}
       </head>
       <body className="min-h-screen bg-ground font-sans antialiased">
+        <ErrorReporting />
         <MobileBridgeLoader />
         <TRPCProvider>
           <AuthProvider>{children}</AuthProvider>

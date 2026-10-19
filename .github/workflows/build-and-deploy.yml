@@ -149,6 +149,14 @@ jobs:
           # reference) builds green and talks to the wrong API.
           grep -rqF "$NEXT_PUBLIC_API_URL" packages/client/out/_next/static \
             || { echo "::error::NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL never reached the bundle"; exit 1; }
+          # Same for the error-report endpoint: set, but read by no client
+          # code, it builds green and the client reports nothing.
+          if [ -n "$NEXT_PUBLIC_SENTRY_DSN" ]; then
+            sentry_host="${NEXT_PUBLIC_SENTRY_DSN#*@}"
+            sentry_host="${sentry_host%%/*}"
+            grep -rqF "$sentry_host" packages/client/out/_next/static \
+              || { echo "::error::NEXT_PUBLIC_SENTRY_DSN never reached the bundle"; exit 1; }
+          fi
           # A relative asset prefix breaks every nested route's chunks.
           if grep -rlF '"./_next' packages/client/out --include='*.html' | grep -q .; then
             echo "::error::exported HTML references ./_next — drop the relative assetPrefix"; exit 1
