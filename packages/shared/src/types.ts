@@ -15,7 +15,6 @@ export type UserProfile = {
   bio?: string;
   preferences: {
     theme: ThemePreference;
-    notifications: boolean;
     /** IANA zone, e.g. "Europe/Berlin". Streak days are resolved in it. */
     timezone: string;
     /**

@@ -23,11 +23,6 @@ export default function SettingsPage() {
     router.push("/login");
   }
 
-  function handleNotificationToggle() {
-    const current = profileQuery.data?.preferences.notifications ?? true;
-    updateMutation.mutate({ preferences: { notifications: !current } });
-  }
-
   return (
     <div className="space-y-8">
       <div>
@@ -57,20 +52,9 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Notifications */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Notifications</h2>
-          <label className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={profileQuery.data?.preferences.notifications ?? true}
-              onChange={handleNotificationToggle}
-              className="h-4 w-4 rounded border-input"
-              data-testid="notifications-toggle"
-            />
-            <span className="text-sm">Enable email notifications</span>
-          </label>
-        </div>
+        {/* No notification settings: the app sends no email of its own. A
+            reminder, if one is ever added, gets its own option that the
+            person turns on and sets, off until then. */}
 
         {/* Billing — fallback rendered when hatchkit scaffolded Stripe
             but the user deferred their keys (or rotated them and left

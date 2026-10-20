@@ -116,7 +116,6 @@ export const updateProfileSchema = z.object({
   preferences: z
     .object({
       theme: z.enum(["light", "dark", "system"]).optional(),
-      notifications: z.boolean().optional(),
       timezone: z.string().min(1).max(64).optional(),
       dayStartHour: z.number().int().min(0).max(23).optional(),
     })

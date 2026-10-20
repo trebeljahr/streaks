@@ -7,7 +7,6 @@ export interface IProfile extends Document {
   bio?: string;
   preferences: {
     theme: ThemePreference;
-    notifications: boolean;
     timezone: string;
     dayStartHour: number;
   };
@@ -26,7 +25,6 @@ const profileSchema = new Schema<IProfile>(
         enum: ["light", "dark", "system"],
         default: "system",
       },
-      notifications: { type: Boolean, default: true },
       // Streak days are resolved in this zone, so travel doesn't break a
       // streak and DST doesn't shift one.
       timezone: { type: String, default: "UTC" },

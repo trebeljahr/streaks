@@ -10,7 +10,6 @@ export const profileRouter = router({
         userId: ctx.user.id,
         preferences: {
           theme: "system",
-          notifications: true,
           timezone: "UTC",
           dayStartHour: 4,
         },
@@ -33,9 +32,6 @@ export const profileRouter = router({
       if (input.preferences) {
         if (input.preferences.theme !== undefined) {
           update["preferences.theme"] = input.preferences.theme;
-        }
-        if (input.preferences.notifications !== undefined) {
-          update["preferences.notifications"] = input.preferences.notifications;
         }
         if (input.preferences.timezone !== undefined) {
           update["preferences.timezone"] = input.preferences.timezone;
