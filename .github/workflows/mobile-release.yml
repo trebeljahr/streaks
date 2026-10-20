@@ -13,6 +13,9 @@ on:
 jobs:
   android:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
     steps:
       - uses: actions/checkout@v4
 
@@ -71,8 +74,22 @@ jobs:
           releaseFiles: android/app/build/outputs/bundle/release/*.aab
           track: internal
 
+      # Same gate as the upload, fed by the same env var, so this runs only
+      # when the upload ran.
+      - name: Record the Google Play upload
+        if: env.PLAY_SERVICE_ACCOUNT_JSON != ''
+        uses: ./.github/actions/record-ship
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        with:
+          environment: google-play
+          branch: internal
+
   ios:
     runs-on: macos-latest
+    permissions:
+      contents: read
+      deployments: write
     steps:
       - uses: actions/checkout@v4
 
@@ -153,3 +170,13 @@ jobs:
             --type ios \
             --apiKey "$APPLE_API_KEY_ID" \
             --apiIssuer "$APPLE_API_ISSUER_ID"
+
+      # Same gate as the upload, fed by the same env var, so this runs only
+      # when the upload ran.
+      - name: Record the TestFlight upload
+        if: env.APPLE_API_KEY_BASE64 != ''
+        uses: ./.github/actions/record-ship
+        env:
+          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
+        with:
+          environment: testflight

@@ -311,6 +311,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-client, deploy]
     if: needs.deploy.outputs.server_deployed == 'true'
+    # No packages: write: this job only talks to Cloudflare and the site.
+    permissions:
+      contents: read
+      deployments: write
     env:
       SITE_URL: https://streaks.trebeljahr.com
       API_URL: https://streaks.trebeljahr.com
@@ -353,6 +357,17 @@ jobs:
             sleep 5
           done
           echo "::error::$SITE_URL/version.json never reported $GITHUB_SHA"; exit 1
+
+      # The record step is a local action, so it needs that one folder.
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/actions
+
+      - name: Record the web deploy
+        uses: ./.github/actions/record-ship
+        with:
+          environment: web
+          url: ${{ env.SITE_URL }}
 
   # Always runs, so a half-finished release says which half is live.
   release-summary:

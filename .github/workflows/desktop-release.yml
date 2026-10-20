@@ -31,6 +31,10 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    permissions:
+      contents: read
+      deployments: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -93,3 +97,15 @@ jobs:
           ARTIFACT=$(ls ${{ matrix.artifact-glob }} | head -n1)
           butler push "$ARTIFACT" "$ITCH_USER/$ITCH_GAME:${{ matrix.butler-channel }}" \
             --userversion "${GITHUB_REF_NAME#v}"
+
+      # Same gate as the push, fed by the same env var, so this runs only
+      # when the push ran.
+      - name: Record the itch.io upload
+        if: env.ITCH_API_KEY != ''
+        uses: ./.github/actions/record-ship
+        env:
+          ITCH_API_KEY: ${{ secrets.ITCH_API_KEY }}
+        with:
+          environment: itch
+          branch: ${{ matrix.butler-channel }}
+          url: https://${{ secrets.ITCH_USER }}.itch.io/${{ secrets.ITCH_GAME }}
