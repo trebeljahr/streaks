@@ -108,4 +108,6 @@ jobs:
         with:
           environment: itch
           branch: ${{ matrix.butler-channel }}
-          url: https://${{ secrets.ITCH_USER }}.itch.io/${{ secrets.ITCH_GAME }}
+          # No url: this repo is public, and the itch.io user and game are
+          # stored as secrets; a deployment's url shows on the public
+          # Environments page.
