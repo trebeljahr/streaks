@@ -163,6 +163,16 @@ jobs:
           fi
           printf '{"commit":"%s","apiUrl":"%s"}\n' "$COMMIT_SHA" "$NEXT_PUBLIC_API_URL" > packages/client/out/version.json
 
+      # The HTML can be fine and the page still lose its stylesheet once
+      # React hydrates: a mismatch in the root layout (an empty NEXT_PUBLIC_*
+      # rendered as text in <head>) makes React drop every <link> in <head>.
+      # Check the exact export this job uploads, built with the real env.
+      - run: npx playwright install --with-deps chromium
+      - name: Check the exported landing page stays styled after hydration
+        run: pnpm test:e2e:export
+        env:
+          CI: "true"
+
       # A Worker version serves only its own files. Carry the last two
       # releases' hashed files so tabs opened before this deploy keep
       # loading their chunks.

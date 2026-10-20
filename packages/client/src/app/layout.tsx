@@ -34,6 +34,14 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+/*
+ * CI sets this to "" when the repo variable is unset. A ternary, never
+ * `domain && <script/>`: that renders "" as a text node inside <head>, the
+ * exported HTML has none, hydration fails (React #418), and React's
+ * recovery drops every <link> in <head> — the stylesheet included.
+ */
+const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
+
 export default function RootLayout({
   children,
 }: {
@@ -42,16 +50,16 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${sora.variable} ${outfit.variable} ${dmMono.variable}`}>
       <head>
-        {process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN && (
+        {plausibleDomain ? (
           <script
             defer
-            data-domain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
+            data-domain={plausibleDomain}
             src={
               process.env.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL ||
               "https://plausible.io/js/script.js"
             }
           />
-        )}
+        ) : null}
       </head>
       <body className="min-h-screen bg-ground font-sans antialiased">
         <ErrorReporting />

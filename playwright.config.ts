@@ -5,6 +5,8 @@ const E2E_CLIENT_PORT = process.env.E2E_CLIENT_PORT ?? "3001";
 
 export default defineConfig({
   testDir: "./e2e",
+  // e2e/export/ checks the static export; see playwright.export.config.ts.
+  testIgnore: ["export/**"],
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 2 : 0,

@@ -19,6 +19,7 @@
     "test:unit": "pnpm --filter @starter/shared run build && pnpm --filter @starter/server run test",
     "test:client": "pnpm --filter @starter/client run test",
     "test:e2e": "npx playwright test",
+    "test:e2e:export": "npx playwright test -c playwright.export.config.ts",
     "dev:infra": "docker-compose -f docker-compose.dev.yml up -d",
     "dev:infra:stop": "docker-compose -f docker-compose.dev.yml down",
     "dev:infra:reset": "docker-compose -f docker-compose.dev.yml down -v",
