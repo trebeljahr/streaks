@@ -11,6 +11,11 @@ allowBuilds:
   unrs-resolver: true
 
 overrides:
+  "body-parser@2": "2.4.0"
+  "zod@4": "4.6.6"
+  # Match the Express 5 runtime across the tRPC adapter and direct types.
+  "@types/express": "5.0.6"
+  "@types/express-serve-static-core": "5.1.1"
   # Share one driver type across Mongoose, Better Auth, and direct imports.
   "mongodb@>=7 <8": "7.7.0"
   # Security backports for transitive pins; see SECURITY-MIGRATION.md.
@@ -18,7 +23,8 @@ overrides:
   "brace-expansion@>=5 <6": "^5.0.9"
   "postcss@>=8 <8.5.23": "^8.5.23"
   "nanoid@>=3 <3.3.18": "^3.3.18"
-  "undici@>=7 <7.29.1": "^7.29.1"
+  "undici@>=6 <6.29.1": "^6.29.1"
+  "undici@>=7 <7.30.1": "^7.30.1"
   "serialize-javascript@>=6 <7.0.5": "^7.0.5"
   "sockjs>uuid": "^11.1.1"
   "sharp@>=0.34 <0.35.4": "^0.35.4"
