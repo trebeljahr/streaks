@@ -4,7 +4,7 @@ import { APP_NAME, errorReportCopy } from "@/lib/privacy-copy";
 
 export const metadata: Metadata = {
   title: "Privacy",
-  description: `What the error reports ${APP_NAME} sends contain, and who receives them.`,
+  description: `What the error reports ${APP_NAME} sends contain, who receives them, and what the server logs.`,
 };
 
 export default function PrivacyPage() {
@@ -13,8 +13,9 @@ export default function PrivacyPage() {
       <main className="mx-auto w-full max-w-2xl py-8">
         <h1 className="mb-4 text-4xl font-bold tracking-tight">Privacy</h1>
         <p className="mb-10 text-lg text-muted-foreground">
-          This page covers the error reports {APP_NAME} sends. It does not yet
-          describe the other data {APP_NAME} keeps, such as your account.
+          This page covers the error reports {APP_NAME} sends and the server's
+          access log. It does not yet describe the other data {APP_NAME} keeps,
+          such as your account.
         </p>
 
         <section className="space-y-4 text-muted-foreground">
@@ -36,6 +37,19 @@ export default function PrivacyPage() {
           </ul>
           <p>{errorReportCopy.operator}</p>
           <p>{errorReportCopy.ip}</p>
+        </section>
+
+        <section className="space-y-4 text-muted-foreground">
+          <h2 className="text-2xl font-semibold text-foreground">
+            Server logs
+          </h2>
+          <p>
+            The web server in front of {APP_NAME} writes an access log for each
+            request: the time, the address requested (including any query
+            string), the response code, your IP address, your country, the user
+            agent of your browser and the referring page. It is used only to find
+            attacks and faults, and it is deleted after 14 days.
+          </p>
         </section>
 
         <Link href="/" className="mt-10 inline-block text-sm underline">
