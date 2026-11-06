@@ -1,0 +1,198 @@
+name: dependency-updates
+
+# Lands Dependabot's grouped minor/patch and security PRs (see
+# .github/dependabot.yml): runs the same checks as the push pipeline on the PR,
+# squash-merges it, and starts build-and-deploy on main. A merge made with
+# GITHUB_TOKEN does not trigger push workflows, so the deploy is started
+# explicitly. One PR per run; the next run takes the next one after Dependabot
+# rebases it.
+#
+# Never lands: a major update, an ungrouped PR, a PR with a commit that is not
+# Dependabot's, or a PR whose checks fail. Those stay open for a person.
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: dependency-updates
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  pick:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      number: ${{ steps.pick.outputs.number }}
+      sha: ${{ steps.pick.outputs.sha }}
+    steps:
+      - name: Pick the oldest grouped Dependabot PR
+        id: pick
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          pr=$(gh pr list --repo "$REPO" --state open --author app/dependabot --base main \
+                 --json number,headRefName,headRefOid,createdAt \
+                 --jq '[.[] | select(.headRefName | test("^dependabot/npm_and_yarn/npm-(minor-patch|security)-"))] | sort_by(.createdAt) | first // empty')
+          if [ -z "$pr" ]; then echo "no grouped Dependabot PR is open"; exit 0; fi
+          number=$(jq -r .number <<<"$pr"); sha=$(jq -r .headRefOid <<<"$pr")
+          others=$(gh pr view "$number" --repo "$REPO" --json commits \
+                     --jq '[.commits[].authors[].login | select(. != "dependabot[bot]")] | length')
+          if [ "$others" != "0" ]; then
+            echo "::warning::PR #$number has commits that are not Dependabot's: left for a person"; exit 0
+          fi
+          echo "PR #$number at $sha"
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+  # The same gates as build-and-deploy.yml: verify, e2e, and build-client's
+  # export check. They run the PR's code with a read-only token and no
+  # secrets.
+  test:
+    needs: [pick]
+    if: needs.pick.outputs.number != ''
+    runs-on: ubuntu-latest
+    env:
+      # Prerendering initializes the auth client and requires an absolute URL.
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:5006
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.pick.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm run test:unit
+      - run: pnpm run test:client
+
+  e2e:
+    needs: [pick, test]
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:5006
+    services:
+      mongo-e2e:
+        image: mongo:7
+        ports:
+          - 27018:27017
+      redis-e2e:
+        image: redis:7-alpine
+        ports:
+          - 6380:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.pick.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+
+      - name: Start SeaweedFS
+        run: |
+          docker run -d --name e2e-seaweedfs -p 9002:8333 \
+            -e S3_BUCKET=streaks-e2e \
+            --tmpfs /data chrislusf/seaweedfs:4.47
+          for _ in $(seq 1 60); do
+            curl -sf -o /dev/null http://127.0.0.1:9002/streaks-e2e && exit 0
+            sleep 1
+          done
+          echo "SeaweedFS did not serve bucket streaks-e2e within 60s" >&2
+          docker logs e2e-seaweedfs >&2
+          exit 1
+
+      - run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npx playwright test
+        env:
+          CI: "true"
+          MONGODB_URI: mongodb://127.0.0.1:27018/streaks-e2e
+          REDIS_URL: redis://127.0.0.1:6380
+          BETTER_AUTH_SECRET: e2e-test-secret
+          BETTER_AUTH_URL: http://127.0.0.1:5006
+          FRONTEND_URL: http://127.0.0.1:3001
+
+  export:
+    needs: [pick, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.pick.outputs.sha }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build the static client
+        env:
+          NEXT_FILE_EXPORT: "1"
+          NEXT_PUBLIC_API_URL: https://streaks.trebeljahr.com
+          NEXT_PUBLIC_WS_URL: wss://streaks.trebeljahr.com
+          NEXT_PUBLIC_PLAUSIBLE_DOMAIN: "${{ vars.NEXT_PUBLIC_PLAUSIBLE_DOMAIN }}"
+          NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL: "${{ vars.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL }}"
+          NEXT_PUBLIC_SENTRY_DSN: "${{ vars.NEXT_PUBLIC_SENTRY_DSN }}"
+        run: |
+          set -euo pipefail
+          pnpm --filter @starter/shared run build
+          pnpm --filter @starter/client run build
+          test -n "$NEXT_PUBLIC_API_URL" || { echo "::error::NEXT_PUBLIC_API_URL is empty"; exit 1; }
+          grep -rqF "$NEXT_PUBLIC_API_URL" packages/client/out/_next/static \
+            || { echo "::error::NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL never reached the bundle"; exit 1; }
+          if [ -n "$NEXT_PUBLIC_SENTRY_DSN" ]; then
+            sentry_host="${NEXT_PUBLIC_SENTRY_DSN#*@}"
+            sentry_host="${sentry_host%%/*}"
+            grep -rqF "$sentry_host" packages/client/out/_next/static \
+              || { echo "::error::NEXT_PUBLIC_SENTRY_DSN never reached the bundle"; exit 1; }
+          fi
+          if grep -rlF '"./_next' packages/client/out --include='*.html' | grep -q .; then
+            echo "::error::exported HTML references ./_next — drop the relative assetPrefix"; exit 1
+          fi
+
+      - run: npx playwright install --with-deps chromium
+      - name: Check the exported landing page stays styled after hydration
+        run: pnpm test:e2e:export
+        env:
+          CI: "true"
+
+  land:
+    needs: [pick, test, e2e, export]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    steps:
+      - name: Squash-merge the tested commit and deploy main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ needs.pick.outputs.number }}
+          SHA: ${{ needs.pick.outputs.sha }}
+        run: |
+          # --match-head-commit refuses if Dependabot pushed again after the tests.
+          gh pr merge "$NUMBER" --repo "$REPO" --squash --delete-branch --match-head-commit "$SHA"
+          gh workflow run build-and-deploy.yml --repo "$REPO" --ref main
+          echo "merged #$NUMBER and started build-and-deploy on main"
