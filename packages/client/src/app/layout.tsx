@@ -21,6 +21,9 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
+  // Absolute og:image and twitter:image URLs for opengraph-image.jpg and
+  // twitter-image.jpg (made from docs/marketing/og-wordmark.png).
+  metadataBase: new URL("https://streaks.trebeljahr.com"),
   title: {
     default: "Streaks",
     template: "%s | Streaks",
