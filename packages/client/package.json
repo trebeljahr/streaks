@@ -11,7 +11,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hatchkit/dev-plugin-next": "^0.2.19",
     "@sentry/browser": "^10.78.0",
     "@starter/shared": "workspace:*",
     "@tanstack/react-query": "^5.107.1",

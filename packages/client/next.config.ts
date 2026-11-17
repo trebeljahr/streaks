@@ -2,17 +2,6 @@ import path from "node:path";
 import type { NextConfig } from "next";
 
 /*
- * The hatchkit local-dev plugin (`@hatchkit/dev-plugin-next` — Caddy
- * fragment + Tailscale banner) is deliberately not wired in here.
- *
- * Next 16 loads next.config.ts through a CommonJS bundle, and that package
- * publishes only an `import` condition in its exports map, so requiring it
- * fails with ERR_PACKAGE_PATH_NOT_EXPORTED — under `next dev` as well as
- * `next build`. It affects only the local-dev banner and the Caddy fragment;
- * nothing the app does at runtime depends on it.
- */
-
-/*
  * A relative assetPrefix is required for the native shells, which load the
  * export from file:// (Electron) or the Capacitor bundle. It is WRONG for
  * the web: combined with trailingSlash it resolves chunks against the

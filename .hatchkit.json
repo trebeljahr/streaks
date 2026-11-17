@@ -23,10 +23,6 @@
     "client": 6999,
     "nativeHmr": 7834
   },
-  "localDev": {
-    "slug": "streaks",
-    "domain": "local.trebeljahr.com"
-  },
   "email": {
     "transactional": "listmonk-ses",
     "mailingList": "none"

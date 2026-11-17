@@ -108,9 +108,6 @@ importers:
 
   packages/client:
     dependencies:
-      '@hatchkit/dev-plugin-next':
-        specifier: ^0.2.19
-        version: 0.2.19(next@16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@25.9.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))
       '@sentry/browser':
         specifier: ^10.78.0
         version: 10.78.0
@@ -2089,14 +2086,6 @@ packages:
 
   '@hapi/topo@6.0.2':
     resolution: {integrity: sha512-KR3rD5inZbGMrHmgPxsJ9dbi6zEK+C3ZwUwTa+eMwWLz7oijWUTWD2pMSNNYJAU6Qq+65NkxXjqHr/7LM2Xkqg==}
-
-  '@hatchkit/dev-plugin-next@0.2.19':
-    resolution: {integrity: sha512-OfqNCDyj8Zv+KsS3E3jogqyBuzTTcbtHRubELpXdFz3jEbJeLsUGF65lJeSdxtym4XSyHbJvGsNA6OoD8QY32w==}
-    peerDependencies:
-      next: '>=14'
-
-  '@hatchkit/dev-shared@0.2.19':
-    resolution: {integrity: sha512-YxHlMwgajF8jlPs4mFxx/uUk+4XJJP+pmxI+SxzXJqN7+N6+8pWWI27dDuCnWV/xgfJFYP+7m7I7An8/eW0vBw==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -13170,13 +13159,6 @@ snapshots:
   '@hapi/topo@6.0.2':
     dependencies:
       '@hapi/hoek': 11.0.7
-
-  '@hatchkit/dev-plugin-next@0.2.19(next@16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@25.9.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))':
-    dependencies:
-      '@hatchkit/dev-shared': 0.2.19
-      next: 16.4.6(@babel/core@7.29.13)(@opentelemetry/api@1.9.1)(@playwright/test@1.65.1)(@types/node@25.9.9)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-
-  '@hatchkit/dev-shared@0.2.19': {}
 
   '@humanfs/core@0.19.2':
     dependencies:

@@ -21,8 +21,6 @@ updates:
       # 0.x packages: a "minor" bump is a breaking release under semver.
       - dependency-name: "class-variance-authority"
         update-types: ["version-update:semver-minor"]
-      - dependency-name: "@hatchkit/dev-plugin-next"
-        update-types: ["version-update:semver-minor"]
     groups:
       npm-minor-patch:
         applies-to: version-updates

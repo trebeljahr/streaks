@@ -18,7 +18,7 @@
 #   NEXT_PORT=<n>    Next.js port (default: 3000)
 #   LAN_IP=<ip>      override auto-detected LAN IP
 #   CAP_DEV_URL=<url> full WebView dev URL override, e.g.
-#                     https://<slug>.local.<your-domain>/
+#                     http://<lan-ip>:<port>/
 
 set -e
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -34,23 +34,6 @@ NEXT_PORT="${NEXT_PORT:-7834}"
 DEV_HOST="${LAN_IP:-10.0.2.2}"
 
 NEXT_PID=""
-
-local_dev_url() {
-  node -e '
-    const fs = require("fs");
-    const path = process.argv[1];
-    try {
-      const manifest = JSON.parse(fs.readFileSync(path, "utf8"));
-      const slug = manifest?.localDev?.slug;
-      const configuredDomain = manifest?.localDev?.domain;
-      const projectDomain = String(manifest?.domain || "").replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-      const labels = projectDomain.split(".").filter(Boolean);
-      const baseDomain = labels.length > 2 ? labels.slice(-2).join(".") : projectDomain;
-      const localDevDomain = configuredDomain || (baseDomain ? `local.${baseDomain}` : "local.example.com");
-      if (slug) process.stdout.write(`https://${slug}.${localDevDomain}/`);
-    } catch {}
-  ' "$REPO/.hatchkit.json"
-}
 
 cleanup() {
   echo ""
@@ -99,20 +82,12 @@ if [ -n "$ATTACHED_DEVICES" ]; then
   echo "$ATTACHED_DEVICES" | sed 's/^/   /'
   if echo "$ATTACHED_DEVICES" | grep -qvE '^emulator-'; then
     if [ -z "${CAP_DEV_URL:-}" ] && [ "$DEV_HOST" = "10.0.2.2" ]; then
-      TAILSCALE_DEV_URL="$(local_dev_url)"
-      if [ -n "$TAILSCALE_DEV_URL" ]; then
-        CAP_DEV_URL="$TAILSCALE_DEV_URL"
-        echo ""
-        echo "Physical device detected — using hatchkit Tailscale dev URL:"
-        echo "  $CAP_DEV_URL"
-      else
-        echo ""
-        echo "Physical device detected but DEV_HOST=10.0.2.2 (emulator-only)."
-        echo "Re-run with your Mac's LAN IP:"
-        echo "  LAN_IP=\$(ipconfig getifaddr en0) pnpm dev:android"
-        echo "Or set CAP_DEV_URL to a reachable HTTPS dev URL."
-        exit 1
-      fi
+      echo ""
+      echo "Physical device detected but DEV_HOST=10.0.2.2 (emulator-only)."
+      echo "Re-run with your Mac's LAN IP:"
+      echo "  LAN_IP=\$(ipconfig getifaddr en0) pnpm dev:android"
+      echo "Or set CAP_DEV_URL to a reachable dev URL."
+      exit 1
     fi
   fi
 elif adb devices | awk 'NR>1 && $2 == "unauthorized" { found=1 } END { exit !found }'; then
