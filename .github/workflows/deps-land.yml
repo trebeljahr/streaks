@@ -1,0 +1,192 @@
+# Dependency autopilot: lands the branches that Claude on the hq box pushes.
+# The box scans GitHub's main every morning, a Claude session applies the
+# updates on deps/<date> and pushes the branch. This workflow runs the repo's
+# checks on it, then fast-forwards main (never a merge, never a force push) and
+# starts build-and-deploy (it has a workflow_dispatch trigger for this), because a push made with GITHUB_TOKEN starts no push
+# workflows. When main moved meanwhile it rebases onto main, pushes the result
+# as a new deps/ branch and runs itself again on it, so nothing lands untested.
+# deps/<date>-major branches only run the checks; they land when Rico says so
+# (hq: `deps-state land <repo> <date>`, which dispatches this with land=true).
+# No pull requests. The box reads the outcome from this workflow's runs.
+name: deps-land
+run-name: deps-land ${{ inputs.branch || github.ref_name }}
+
+on:
+  push:
+    branches: ["deps/**"]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: deps/ branch to check (and land)
+        required: true
+      land:
+        description: land it after the checks
+        type: boolean
+        default: true
+
+concurrency:
+  group: deps-land-${{ inputs.branch || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  target:
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.t.outputs.branch }}
+      sha: ${{ steps.t.outputs.sha }}
+      land: ${{ steps.t.outputs.land }}
+    steps:
+      - id: t
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          IN_BRANCH: ${{ inputs.branch }}
+          IN_LAND: ${{ inputs.land }}
+          REF_NAME: ${{ github.ref_name }}
+          PUSH_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" = push ]; then
+            branch=$REF_NAME; sha=$PUSH_SHA
+            case "$branch" in *-major) land=false ;; *) land=true ;; esac
+          else
+            branch=$IN_BRANCH; land=$IN_LAND
+            sha=$(gh api "repos/$REPO/git/ref/heads/$branch" --jq .object.sha)
+          fi
+          case "$branch" in deps/*) ;; *) echo "only deps/ branches"; exit 1 ;; esac
+          { echo "branch=$branch"; echo "sha=$sha"; echo "land=$land"; } >> "$GITHUB_OUTPUT"
+          echo "$branch at $sha, land=$land"
+
+  # Checks: the verify and e2e jobs of build-and-deploy.yml, which run again after the landing.
+  verify:
+    needs: [target]
+    runs-on: ubuntu-latest
+    env:
+      # Prerendering initializes the auth client and requires an absolute URL.
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:5006
+    steps:
+      - name: Check out the branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.target.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm run test:unit
+      - run: pnpm run test:client
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [target]
+    env:
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:5006
+    services:
+      mongo-e2e:
+        image: mongo:7
+        ports:
+          - 27018:27017
+      redis-e2e:
+        image: redis:7-alpine
+        ports:
+          - 6380:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Check out the branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.target.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+
+      # Local S3 for the server's storage service. Docker Hub no longer
+      # serves minio/minio or minio/mc; this is the same image and tag as
+      # e2e/start-server.sh. `S3_BUCKET` creates the bucket on startup, and
+      # with no credentials configured SeaweedFS accepts any signature.
+      # Endpoint, bucket and credentials come from playwright.config.ts.
+      - name: Start SeaweedFS
+        run: |
+          docker run -d --name e2e-seaweedfs -p 9002:8333 \
+            -e S3_BUCKET=streaks-e2e \
+            --tmpfs /data chrislusf/seaweedfs:4.47
+          for _ in $(seq 1 60); do
+            curl -sf -o /dev/null http://127.0.0.1:9002/streaks-e2e && exit 0
+            sleep 1
+          done
+          echo "SeaweedFS did not serve bucket streaks-e2e within 60s" >&2
+          docker logs e2e-seaweedfs >&2
+          exit 1
+
+      - run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npx playwright test
+        env:
+          CI: "true"
+          MONGODB_URI: mongodb://127.0.0.1:27018/streaks-e2e
+          REDIS_URL: redis://127.0.0.1:6380
+          BETTER_AUTH_SECRET: e2e-test-secret
+          BETTER_AUTH_URL: http://127.0.0.1:5006
+          FRONTEND_URL: http://127.0.0.1:3001
+
+  land:
+    needs: [target, verify, e2e]
+    if: needs.target.outputs.land == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Fast-forward main, or rebase and test again
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ needs.target.outputs.branch }}
+          SHA: ${{ needs.target.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch -q origin main "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
+          if [ "$(git rev-parse "origin/$BRANCH")" != "$SHA" ]; then
+            echo "$BRANCH moved after the checks; the run for the new tip lands it"; exit 0
+          fi
+          if git merge-base --is-ancestor origin/main "$SHA"; then
+            # Plain push: GitHub refuses it unless it is a fast-forward.
+            git push origin "$SHA:refs/heads/main"
+            echo "main -> $SHA"
+            gh workflow run build-and-deploy.yml --ref main
+            git push -q origin --delete "$BRANCH" || true
+            exit 0
+          fi
+          base=${BRANCH%-rebased*}
+          n=$(( $(git ls-remote --heads origin "$base-rebased*" | wc -l) + 1 ))
+          next="$base-rebased$n"
+          git checkout -q -B land "$SHA"
+          if ! git rebase -q origin/main; then
+            git rebase --abort || true
+            echo "::error::$BRANCH does not rebase onto main cleanly"; exit 1
+          fi
+          git push -q origin "HEAD:refs/heads/$next"
+          gh workflow run deps-land.yml --ref main -f branch="$next" -f land=true
+          git push -q origin --delete "$BRANCH" || true
+          echo "main moved: rebased onto $(git rev-parse --short origin/main) as $next, checks run again"
